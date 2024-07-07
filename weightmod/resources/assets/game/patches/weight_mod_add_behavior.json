@@ -1,0 +1,1044 @@
+﻿[
+  /*{
+    "file": "game:entities/humanoid/player.json",
+    "reason": "add",
+    "path": "/server/behaviors/-",
+    "value": { "code": "affectedByItemsWeight" }
+  },
+  {
+    "file": "game:entities/humanoid/player.json",
+    "reason": "add",
+    "path": "/client/behaviors/-",
+    "value": { "code": "affectedByItemsWeight" }
+  },*/
+  //graded ores
+  {
+    "file": "game:itemtypes/resource/ore-graded.json",
+    "reason": "add",
+    "path": "/attributes/weightmodByType",
+    "value": {
+      "ore-poor-*": 13,
+      "ore-medium-*": 19.5,
+      "ore-rich-*": 32.5,
+      "ore-bountiful-*": 52
+
+    }
+  },
+  {
+    "file": "game:itemtypes/resource/crystalizedore-graded.json",
+    "reason": "add",
+    "path": "/attributes/weightmodByType",
+    "value": {
+      "*-poor-cassiterite-*": 13,
+      "*-medium-cassiterite-*": 26,
+      "*-rich-cassiterite-*": 43,
+      "*-bountiful-cassiterite-*": 52,
+
+      "*-poor-hematite-*": 52,
+      "*-medium-hematite-*": 75,
+      "*-rich-hematite-*": 78,
+      "*-bountiful-hematite-*": 104,
+
+      "*-poor-quartz_nativesilver-*": 13,
+      "*-medium-quartz_nativesilver-*": 26,
+      "*-rich-quartz_nativesilver-*": 43,
+      "*-bountiful-quartz_nativesilver-*": 52,
+
+      "*-poor-quartz_nativegold-*": 13,
+      "*-medium-quartz_nativegold-*": 26,
+      "*-rich-quartz_nativegold-*": 43,
+      "*-bountiful-quartz_nativegold-*": 52,
+
+      "*-poor-*": 43,
+      "*-medium-*": 52,
+      "*-rich-*": 75,
+      "*-bountiful-*": 91
+
+    }
+  },
+
+  //crystalizedore
+  //Ingots and plates
+  {
+    "file": "game:itemtypes/resource/metalplate.json",
+    "reason": "add",
+    "path": "/attributes/weightmodByType",
+    "value": {
+      "*-copper": 178,
+      "*-brass": 170,
+      "*-tinbronze": 152,
+      "*-bismuthbronze": 158,
+      "*-blackbronze": 180,
+      "*-iron": 156,
+      "*-gold": 386,
+      "*-lead": 226,
+      "*-tin": 144,
+      "*-chromium": 142,
+      "*-platinum": 430,
+      "*-titanium": 90,
+      "*-zinc": 142,
+      "*-silver": 210,
+      "*-bismuth": 194,
+      "*-molybdochalkos": 192
+    }
+  },
+  {
+    "file": "game:itemtypes/resource/ingot.json",
+    "reason": "add",
+    "path": "/attributes/weightmodByType",
+    "value": {
+      "*-copper": 89,
+      "*-brass": 85,
+      "*-tinbronze": 76,
+      "*-bismuthbronze": 79,
+      "*-blackbronze": 90,
+      "*-iron": 78,
+      "*-gold": 193,
+      "*-lead": 113,
+      "*-tin": 72,
+      "*-chromium": 71,
+      "*-platinum": 215,
+      "*-titanium": 45,
+      "*-zinc": 71,
+      "*-silver": 105,
+      "*-bismuth": 97,
+      "*-molybdochalkos": 96,
+      "*-steel": 78,
+      "*-blistersteel": 78,
+      "*-meteoriciron": 78
+    }
+  },
+  {
+    "file": "game:itemtypes/resource/ironbloom.json",
+    "reason": "add",
+    "path": "/attributes/weightmod",
+    "value": 90
+  },
+  {
+    "file": "game:itemtypes/resource/quartz/clearquartz.json",
+    "reason": "add",
+    "path": "/attributes/weightmod",
+    "value": 30
+
+  },
+  {
+    "file": "game:itemtypes/resource/charcoal.json",
+    "reason": "add",
+    "path": "/attributes/weightmod",
+    "value": 60
+
+  },
+  {
+    "file": "game:itemtypes/resource/metalbit.json",
+    "reason": "add",
+    "path": "/attributes/weightmodByType",
+    "value": {
+      "*-copper": 22,
+      "*-brass": 21,
+      "*-tinbronze": 19,
+      "*-bismuthbronze": 19,
+      "*-blackbronze": 22.5,
+      "*-iron": 19.5,
+      "*-gold": 48.25,
+      "*-lead": 28.25,
+      "*-tin": 18,
+      "*-chromium": 17.75,
+      "*-platinum": 53.75,
+      "*-titanium": 11.25,
+      "*-zinc": 17.75,
+      "*-silver": 26.25,
+      "*-bismuth": 24.25,
+      "*-molybdochalkos": 24
+    }
+  },
+  {
+    "file": "game:itemtypes/resource/nugget.json",
+    "reason": "add",
+    "path": "/attributes/weightmodByType",
+    "value": {
+      "*copper": 22,
+      "*malachite": 22,
+      "*limonite": 19.5,
+      "*magnetite": 19.5,
+      "*hematite": 19.5,
+      "*gold": 48.25,
+      "*galene": 28.25,
+      "*cassiterite": 18,
+      "*chromite": 17.75,
+      "*ilmenite": 11.25,
+      "*sphalerite": 17.75,
+      "*nativesilver": 26.25,
+      "*bismuthinite": 24.25
+    }
+  },
+  {
+    "file": "game:itemtypes/resource/ore-ungraded.json",
+    "reason": "add",
+    "path": "/attributes/weightmodByType",
+    "value": {
+
+      "ore-lignite": 60,
+      "ore-bituminouscoal": 60,
+      "ore-anthracite": 60,
+      "ore-quartz": 30,
+      "ore-olivine": 30,
+      "ore-cinnabar": 40,
+      "*-lapislazuli": 40
+    }
+  },
+  //Stones
+  {
+    "file": "game:itemtypes/resource/stone.json",
+    "reason": "replace",
+    "path": "/attributesByType/*/weightmodByType",
+    "value": { "*": 4 }
+  },
+  {
+    "file": "game:itemtypes/resource/stone.json",
+    "reason": "add",
+    "path": "/attributesByType/stone-chert/weightmod",
+    "value": 4
+  },
+  {
+    "file": "game:itemtypes/resource/stone.json",
+    "reason": "add",
+    "path": "/attributesByType/stone-andesite/weightmod",
+    "value": 4
+  },
+
+  {
+    "file": "game:itemtypes/resource/stone.json",
+    "reason": "add",
+    "path": "/attributesByType/stone-chalk/weightmod",
+    "value": 4
+  },
+
+  {
+    "file": "game:itemtypes/resource/stone.json",
+    "reason": "add",
+    "path": "/attributesByType/stone-granite/weightmod",
+    "value": 4
+  },
+
+  {
+    "file": "game:itemtypes/resource/stone.json",
+    "reason": "add",
+    "path": "/attributesByType/stone-basalt/weightmod",
+    "value": 4
+  },
+
+  {
+    "file": "game:itemtypes/resource/stone.json",
+    "reason": "add",
+    "path": "/attributesByType/stone-peridotite/weightmod",
+    "value": 4
+  },
+
+  {
+    "file": "game:itemtypes/resource/stone.json",
+    "reason": "add",
+    "path": "/attributesByType/stone-obsidian/weightmod",
+    "value": 4
+  },
+  {
+    "file": "game:itemtypes/resource/stone.json",
+    "reason": "add",
+    "path": "/attributesByType/stone-limestone/weightmod",
+    "value": 4
+  },
+  //Crushed
+  {
+    "file": "game:itemtypes/resource/crushed/crushed.json",
+    "reason": "add",
+    "path": "/attributes/weightmodByType",
+    "value": {
+      "crushed-quartz": 25,
+      "crushed-olivine": 25,
+      "crushed-peridotite": 3,
+      "crushed-bauxite": 3,
+      "crushed-ilmenite": 19.5,
+      "crushed-galena": 19.5,
+      "crushed-lapislazuli": 20,
+      "crushed-cinnabar": 20,
+      "crushed-alum": 19.5
+    }
+  },
+  {
+    "file": "game:itemtypes/resource/crushed/salt.json",
+    "reason": "add",
+    "path": "/attributes/weightmodByType",
+    "value": { "*": 2 }
+  },
+  //Armor
+  {
+    "file": "game:itemtypes/wearable/armor.json",
+    "reason": "add",
+    "path": "/attributes/weightmodByType",
+    "value": {
+      "armor-*-improvised-wood": 150,
+      "armor-*-jerkin-leather": 250,
+
+      "armor-*-plate-silver": 3200,
+      "armor-*-plate-copper": 3200,
+      "armor-*-plate-tinbronze": 3200,
+      "armor-*-plate-bismuthbronze": 3200,
+      "armor-*-plate-blackbronze": 3200,
+      "armor-*-plate-iron": 3200,
+      "armor-*-plate-meteoriciron": 3200,
+      "armor-*-plate-steel": 3200,
+
+      "armor-*-brigandine-silver": 2900,
+      "armor-*-brigandine-copper": 2900,
+      "armor-*-brigandine-tinbronze": 2900,
+      "armor-*-brigandine-bismuthbronze": 2900,
+      "armor-*-brigandine-blackbronze": 2900,
+      "armor-*-brigandine-iron": 2900,
+      "armor-*-brigandine-meteoriciron": 2900,
+      "armor-*-brigandine-steel": 2900,
+
+      "armor-*-scale-silver": 2700,
+      "armor-*-scale-copper": 2700,
+      "armor-*-scale-tinbronze": 2700,
+      "armor-*-scale-bismuthbronze": 2700,
+      "armor-*-scale-blackbronze": 2700,
+      "armor-*-scale-iron": 2700,
+      "armor-*-scale-meteoriciron": 2700,
+      "armor-*-scale-steel": 2700,
+
+      "armor-*-lamellar-copper": 2700,
+      "armor-*-lamellar-wood": 2700,
+      "armor-*-lamellar-tinbronze": 2700,
+      "armor-*-lamellar-bismuthbronze": 2700,
+      "armor-*-lamellar-blackbronze": 2700,
+
+      "armor-*-chain-silver": 2600,
+      "armor-*-chain-copper": 2600,
+      "armor-*-chain-tinbronze": 2600,
+      "armor-*-chain-bismuthbronze": 2600,
+      "armor-*-chain-blackbronze": 2600,
+      "armor-*-chain-iron": 2600,
+      "armor-*-chain-meteoriciron": 2600,
+      "armor-*-chain-steel": 2600,
+
+      "armor-*-linen": 650,
+
+
+      "armor-*-lamellar-*": 750,
+      "armor-*-scale-*": 2700,
+      "armor-*-chain-*": 2300,
+      "armor-*-brigandine-*": 2900,
+      "*-antique-forlorn-broken": 1000,
+      "*-antique-forlorn-damaged": 2700,
+      "*antique-forlorn-pristine": 3200,
+
+      "*-antique-blackguard-broken": 1000,
+      "*-antique-blackguard-damaged": 2700,
+      "*antique-blackguard-pristine": 3200
+
+    }
+  },
+  //Tools
+  {
+    "file": "game:itemtypes/tool/hammer.json",
+    "reason": "add",
+    "path": "/attributes/weightmodByType",
+    "value": {
+      "*-copper": 94,
+      "*-gold": 200,
+      "*-silver": 88,
+      "*-bismuthbronze": 45,
+      "*-tinbronze": 34,
+      "*-blackbronze": 35,
+      "*-iron": 46,
+      "*-meteoriciron": 42,
+      "*-steel": 54
+    }
+  },
+  {
+    "file": "game:itemtypes/tool/hoe.json",
+    "reason": "add",
+    "path": "/attributes/weightmodByType",
+    "value": {
+      "*-copper": 94,
+      "*-gold": 200,
+      "*-silver": 88,
+      "*-bismuthbronze": 45,
+      "*-tinbronze": 34,
+      "*-blackbronze": 35,
+      "*-iron": 46,
+      "*-meteoriciron": 42,
+      "*-steel": 54,
+      "hoe-chert": 30,
+      "hoe-granite": 30,
+      "hoe-andesite": 30,
+      "hoe-basalt": 35,
+      "hoe-obsidian": 50,
+      "hoe-peridotite": 30,
+      "hoe-flint": 40
+    }
+  },
+  {
+    "file": "game:itemtypes/tool/chisel.json",
+    "reason": "add",
+    "path": "/attributes/weightmodByType",
+    "value": {
+      "*-copper": 94,
+      "*-gold": 200,
+      "*-silver": 88,
+      "*-bismuthbronze": 45,
+      "*-tinbronze": 34,
+      "*-blackbronze": 35,
+      "*-iron": 46,
+      "*-meteoriciron": 42,
+      "*-steel": 54
+    }
+  },
+  {
+    "file": "game:itemtypes/tool/knife.json",
+    "reason": "add",
+    "path": "/attributes/weightmodByType",
+    "value": {
+      "*-copper": 94,
+      "*-gold": 200,
+      "*-silver": 88,
+      "*-bismuthbronze": 45,
+      "*-tinbronze": 34,
+      "*-blackbronze": 35,
+      "*-iron": 46,
+      "*-meteoriciron": 42,
+      "*-steel": 54,
+      "knife-chert": 45,
+      "knife-granite": 45,
+      "knife-andesite": 45,
+      "knife-basalt": 30,
+      "knife-peridotite": 30,
+      "knife-flint": 30,
+      "knife-obsidian": 30,
+      "knife-bone-chert": 30,
+      "knife-bone-granite": 30,
+      "knife-bone-andesite": 30,
+      "knife-bone-basalt": 30,
+      "knife-bone-peridotite": 30,
+      "knife-bone-flint": 30,
+      "knife-bone-obsidian": 30
+    }
+  },
+  {
+    "file": "game:itemtypes/tool/longblade.json",
+    "reason": "add",
+    "path": "/attributes/weightmodByType",
+    "value": {
+      "*-copper": 94,
+      "*-gold": 200,
+      "*-silver": 88,
+      "*-bismuthbronze": 45,
+      "*-tinbronze": 34,
+      "*-blackbronze": 35,
+      "*-iron": 46,
+      "*-meteoriciron": 42,
+      "*-steel": 54,
+      "*-blackguard": 54,
+      "*-forlorn": 54,
+      "*-scrap": 65
+    }
+  },
+  {
+    "file": "game:itemtypes/tool/pickaxe.json",
+    "reason": "add",
+    "path": "/attributes/weightmodByType",
+    "value": {
+      "*-copper": 94,
+      "*-gold": 200,
+      "*-silver": 88,
+      "*-bismuthbronze": 45,
+      "*-tinbronze": 34,
+      "*-blackbronze": 35,
+      "*-iron": 46,
+      "*-meteoriciron": 42,
+      "*-steel": 54
+    }
+  },
+  {
+    "file": "game:itemtypes/tool/prospectingpick.json",
+    "reason": "add",
+    "path": "/attributes/weightmodByType",
+    "value": {
+      "*-copper": 94,
+      "*-gold": 200,
+      "*-silver": 88,
+      "*-bismuthbronze": 45,
+      "*-tinbronze": 34,
+      "*-blackbronze": 35,
+      "*-iron": 46,
+      "*-meteoriciron": 42,
+      "*-steel": 54
+    }
+  },
+  {
+    "file": "game:itemtypes/tool/saw.json",
+    "reason": "add",
+    "path": "/attributes/weightmodByType",
+    "value": {
+      "*-copper": 94,
+      "*-gold": 200,
+      "*-silver": 88,
+      "*-bismuthbronze": 45,
+      "*-tinbronze": 34,
+      "*-blackbronze": 35,
+      "*-iron": 46,
+      "*-meteoriciron": 42,
+      "*-steel": 54
+    }
+  },
+  {
+    "file": "game:itemtypes/tool/scythe.json",
+    "reason": "add",
+    "path": "/attributes/weightmodByType",
+    "value": {
+      "*-copper": 94,
+      "*-gold": 200,
+      "*-silver": 88,
+      "*-bismuthbronze": 45,
+      "*-tinbronze": 34,
+      "*-blackbronze": 35,
+      "*-iron": 46,
+      "*-meteoriciron": 42,
+      "*-steel": 54
+    }
+  },
+  {
+    "file": "game:itemtypes/tool/shears.json",
+    "reason": "add",
+    "path": "/attributes/weightmodByType",
+    "value": {
+      "*-copper": 94,
+      "*-gold": 200,
+      "*-silver": 88,
+      "*-bismuthbronze": 45,
+      "*-tinbronze": 34,
+      "*-blackbronze": 35,
+      "*-iron": 46,
+      "*-meteoriciron": 42,
+      "*-steel": 54
+    }
+  },
+  {
+    "file": "game:itemtypes/tool/shovel.json",
+    "reason": "add",
+    "path": "/attributes/weightmodByType",
+    "value": {
+      "*-copper": 94,
+      "*-gold": 200,
+      "*-silver": 88,
+      "*-bismuthbronze": 45,
+      "*-tinbronze": 34,
+      "*-blackbronze": 35,
+      "*-iron": 46,
+      "*-meteoriciron": 42,
+      "*-steel": 54,
+      "shovel-chert": 30,
+      "shovel-granite": 30,
+      "shovel-andesite": 30,
+      "shovel-peridotite": 30,
+      "shovel-basalt": 30,
+      "shovel-obsidian": 30
+    }
+  },
+
+  {
+    "file": "game:itemtypes/tool/spear.json",
+    "reason": "add",
+    "path": "/attributes/weightmodByType",
+    "value": {
+      "*-copper": 94,
+      "*-gold": 200,
+      "*-silver": 88,
+      "*-bismuthbronze": 45,
+      "*-tinbronze": 34,
+      "*-blackbronze": 35,
+      "*-iron": 46,
+      "*-meteoriciron": 42,
+      "*-steel": 54,
+      "*-chert": 30,
+      "*-granite": 30,
+      "*-andesite": 30,
+      "*-peridotite": 30,
+      "*-basalt": 30,
+      "*-flint": 30,
+      "*-obsidian": 30,
+      "*-scrap": 50,
+      "*-hacking": 50,
+      "*-ornate-gold": 70,
+      "*-ornate-silver": 50
+    }
+  },
+  {
+    "file": "game:itemtypes/tool/arrow.json",
+    "reason": "add",
+    "path": "/attributes/weightmodByType",
+    "value": {
+      "*-copper": 22,
+      "*-brass": 21,
+      "*-tinbronze": 19,
+      "*-bismuthbronze": 19,
+      "*-blackbronze": 22.5,
+      "*-iron": 19.5,
+      "*-gold": 48.25,
+      "*-lead": 28.25,
+      "*-tin": 18,
+      "*-chromium": 17.75,
+      "*-platinum": 53.75,
+      "*-titanium": 11.25,
+      "*-zinc": 17.75,
+      "*-silver": 26.25,
+      "*-bismuth": 24.25,
+      "*-molybdochalkos": 24
+    }
+  },
+  {
+    "file": "game:itemtypes/tool/axe-metal.json",
+    "reason": "add",
+    "path": "/attributes/weightmodByType",
+    "value": {
+      "*-copper": 94,
+      "*-gold": 200,
+      "*-silver": 88,
+      "*-bismuthbronze": 45,
+      "*-tinbronze": 34,
+      "*-blackbronze": 35,
+      "*-iron": 46,
+      "*-meteoriciron": 42,
+      "*-steel": 54
+    }
+  },
+
+  {
+    "file": "game:itemtypes/tool/axe-stone.json",
+    "reason": "add",
+    "path": "/attributes/weightmod",
+    "value": 30
+  },
+
+  {
+    "file": "game:itemtypes/tool/cleaver.json",
+    "reason": "add",
+    "path": "/attributes/weightmodByType",
+    "value": {
+      "*-copper": 94,
+      "*-gold": 200,
+      "*-silver": 88,
+      "*-bismuthbronze": 45,
+      "*-tinbronze": 34,
+      "*-blackbronze": 35,
+      "*-iron": 46,
+      "*-meteoriciron": 42,
+      "*-steel": 54
+    }
+  },
+  {
+    "file": "game:itemtypes/part/helvehammer.json",
+    "reason": "add",
+    "path": "/attributes/weightmodByType",
+    "value": {
+      "*-bismuthbronze": 45,
+      "*-tinbronze": 34,
+      "*-blackbronze": 35,
+      "*-iron": 46,
+      "*-meteoriciron": 42,
+      "*-steel": 54
+    }
+  },
+  {
+    "file": "game:itemtypes/part/helvehammerhead.json",
+    "reason": "add",
+    "path": "/attributes",
+    "value": {
+      "weightmodByType": {
+        "*-bismuthbronze": 45,
+        "*-tinbronze": 34,
+        "*-blackbronze": 35,
+        "*-iron": 46,
+        "*-meteoriciron": 42,
+        "*-steel": 54
+
+      }
+    }
+  },
+  //containers
+  {
+    "file": "game:itemtypes/bag/basket.json",
+    "reason": "add",
+    "path": "/attributes/weightbonusbags",
+    "value": 3000
+
+  },
+  {
+    "file": "game:itemtypes/bag/backpack.json",
+    "reason": "add",
+    "path": "/attributes/weightbonusbags",
+    "value": 6000
+
+  },
+  {
+    "file": "game:itemtypes/bag/linensack.json",
+    "reason": "add",
+    "path": "/attributes/weightbonusbags",
+    "value": 5000
+
+  },
+  {
+    "file": "game:itemtypes/bag/miningbag.json",
+    "reason": "add",
+    "path": "/attributes/weightbonusbags",
+    "value": 10000
+
+  },
+  {
+    "file": "game:blocktypes/metal/anvil.json",
+    "reason": "add",
+    "path": "/attributes/weightmodByType",
+    "value": {
+      "*-bismuthbronze": 315,
+      "*-tinbronze": 238,
+      "*-blackbronze": 245,
+      "*-iron": 322,
+      "*-meteoriciron": 294,
+      "*-steel": 378
+    }
+
+  },
+  {
+    "file": "game:blocktypes/metal/anvilpart.json",
+    "reason": "add",
+    "path": "/attributes/weightmodByType",
+    "value": {
+      "*-bismuthbronze": 157,
+      "*-tinbronze": 119,
+      "*-blackbronze": 122,
+      "*-iron": 161,
+      "*-meteoriciron": 147,
+      "*-steel": 189
+    }
+
+  },
+  {
+    "file": "game:blocktypes/stone/ore-graded.json",
+    "reason": "add",
+    "path": "/attributes/weightmodByType",
+    "value": {
+      "*-poor-cassiterite-*": 13,
+      "*-medium-cassiterite-*": 26,
+      "*-rich-cassiterite-*": 43,
+      "*-bountiful-cassiterite-*": 52,
+
+      "*-poor-hematite-*": 52,
+      "*-medium-hematite-*": 75,
+      "*-rich-hematite-*": 78,
+      "*-bountiful-hematite-*": 104,
+
+      "*-poor-quartz_nativesilver-*": 13,
+      "*-medium-quartz_nativesilver-*": 26,
+      "*-rich-quartz_nativesilver-*": 43,
+      "*-bountiful-quartz_nativesilver-*": 52,
+
+      "*-poor-quartz_nativegold-*": 13,
+      "*-medium-quartz_nativegold-*": 26,
+      "*-rich-quartz_nativegold-*": 43,
+      "*-bountiful-quartz_nativegold-*": 52,
+
+      "*-poor-*": 43,
+      "*-medium-*": 52,
+      "*-rich-*": 75,
+      "*-bountiful-*": 91
+
+    }
+  },
+  //wearable
+  {
+    "file": "game:itemtypes/wearable/waist.json",
+    "reason": "add",
+    "path": "/attributes/weightbonusbagsByType",
+    "value": {
+      "*heavy-tool-belt": 1000
+
+    }
+
+  },
+  //xmelee
+  {
+    "file": "xmelee:itemtypes/weapon/mace.json",
+    "reason": "add",
+    "path": "/attributes/weightmodByType",
+    "value": {
+        "*-iron": 500,
+        "*-meteoriciron": 500,
+        "*-steel": 500
+      
+    }
+  },
+  {
+    "file": "xmelee:itemtypes/weapon/messer.json",
+    "reason": "add",
+    "path": "/attributes/weightmodByType",
+    "value": {
+        "*-iron": 500,
+        "*-meteoriciron": 500,
+        "*-steel": 500
+      
+    }
+  },
+  {
+    "file": "xmelee:itemtypes/weapon/halberd.json",
+    "reason": "add",
+    "path": "/attributes/weightmodByType",
+    "value": {
+        "*-iron": 675,
+        "*-meteoriciron": 675,
+        "*-steel": 675
+      
+    }
+  },
+  {
+    "file": "xmelee:itemtypes/weapon/pike.json",
+    "reason": "add",
+    "path": "/attributes/weightmodByType",
+    "value": {
+        "*-iron": 625,
+        "*-meteoriciron": 625,
+        "*-steel": 625
+      
+    }
+  },
+  {
+    "file": "xmelee:itemtypes/weapon/rapier.json",
+    "reason": "add",
+    "path": "/attributes/weightmodByType",
+    "value": {
+      "*-iron": 450,
+      "*-meteoriciron": 450,
+      "*-steel": 450
+
+    }
+  },
+  {
+    "file": "xmelee:itemtypes/weapon/spear.json",
+    "reason": "add",
+    "path": "/attributes/weightmodByType",
+    "value": {
+        "*-iron": 700,
+        "*-meteoriciron": 700,
+        "*-steel": 700
+      
+    }
+  },
+  {
+    "file": "xmelee:itemtypes/weapon/zweihander.json",
+    "reason": "add",
+    "path": "/attributes/weightmodByType",
+    "value": {
+        "*-iron": 750,
+        "*-meteoriciron": 750,
+        "*-steel": 750
+      
+    }
+  },
+  {
+    "file": "xmelee:itemtypes/weapon/longsword.json",
+    "reason": "add",
+    "path": "/attributes/weightmodByType",
+    "value": {
+      "*-iron": 650,
+      "*-meteoriciron": 650,
+      "*-steel": 650
+
+    }
+  },
+  {
+    "file": "xmelee:itemtypes/component/weapon_grip.json",
+    "reason": "add",
+    "path": "/attributes",
+    "value": {
+      "weightmodByType": {
+        "*-iron": 50,
+        "*-meteoriciron": 75,
+        "*-steel": 90
+      }
+    }
+  },
+  {
+    "file": "xmelee:itemtypes/component/halberd_head.json",
+    "reason": "add",
+    "path": "/attributes",
+    "value": {
+      "weightmodByType": {
+        "*-iron": 575,
+        "*-meteoriciron": 575,
+        "*-steel": 575
+      }
+    }
+  },
+  {
+    "file": "xmelee:itemtypes/component/longsword_head.json",
+    "reason": "add",
+    "path": "/attributes",
+    "value": {
+      "weightmodByType": {
+        "*-iron": 550,
+        "*-meteoriciron": 550,
+        "*-steel": 550
+      }
+    }
+  },
+  {
+    "file": "xmelee:itemtypes/component/mace_head.json",
+    "reason": "add",
+    "path": "/attributes",
+    "value": {
+      "weightmodByType": {
+        "*-iron": 400,
+        "*-meteoriciron": 400,
+        "*-steel": 400
+      }
+    }
+  },
+  {
+    "file": "xmelee:itemtypes/component/messer_head.json",
+    "reason": "add",
+    "path": "/attributes",
+    "value": {
+      "weightmodByType": {
+        "*-iron": 400,
+        "*-meteoriciron": 400,
+        "*-steel": 400
+      }
+    }
+  },
+  {
+    "file": "xmelee:itemtypes/component/rapier_head.json",
+    "reason": "add",
+    "path": "/attributes",
+    "value": {
+      "weightmodByType": {
+        "*-iron": 350,
+        "*-meteoriciron": 350,
+        "*-steel": 350
+      }
+    }
+  },
+  {
+    "file": "xmelee:itemtypes/component/spear_head.json",
+    "reason": "add",
+    "path": "/attributes",
+    "value": {
+      "weightmodByType": {
+        "*-iron": 250,
+        "*-meteoriciron": 250,
+        "*-steel": 250
+      }
+    }
+  },
+  {
+    "file": "xmelee:itemtypes/component/spear_shaft.json",
+    "reason": "add",
+    "path": "/attributes",
+    "value": {
+      "weightmod": 350
+    }
+  },
+  {
+    "file": "xmelee:itemtypes/component/zweihander_head.json",
+    "reason": "add",
+    "path": "/attributes",
+    "value": {
+      "weightmodByType": {
+        "*-iron": 650,
+        "*-meteoriciron": 650,
+        "*-steel": 650
+      }
+    }
+  },
+
+  //metal*
+
+  {
+    "file": "game:itemtypes/resource/metalchain",
+    "reason": "add",
+    "path": "/attributes",
+    "value": {
+      "weightmodByType": {
+        "*-copper": 178,
+        "*-brass": 170,
+        "*-tinbronze": 152,
+        "*-bismuthbronze": 158,
+        "*-blackbronze": 180,
+        "*-iron": 156,
+        "*-gold": 386,
+        "*-lead": 226,
+        "*-tin": 144,
+        "*-chromium": 142,
+        "*-platinum": 430,
+        "*-titanium": 90,
+        "*-zinc": 142,
+        "*-silver": 210,
+        "*-bismuth": 194,
+        "*-molybdochalkos": 192
+      }
+    }
+  },
+  {
+    "file": "game:itemtypes/resource/metallamellae",
+    "reason": "add",
+    "path": "/attributes",
+    "value": {
+      "weightmodByType": {
+        "*-copper": 89,
+        "*-brass": 85,
+        "*-tinbronze": 76,
+        "*-bismuthbronze": 79,
+        "*-blackbronze": 90,
+        "*-iron": 78,
+        "*-gold": 193,
+        "*-lead": 113,
+        "*-tin": 72,
+        "*-chromium": 71,
+        "*-platinum": 215,
+        "*-titanium": 45,
+        "*-zinc": 71,
+        "*-silver": 105,
+        "*-bismuth": 97,
+        "*-molybdochalkos": 96,
+        "*-steel": 78,
+        "*-blistersteel": 78,
+        "*-meteoriciron": 78
+      }
+    }
+  },
+  {
+    "file": "game:itemtypes/resource/metalscale",
+    "reason": "add",
+    "path": "/attributes",
+    "value": {
+      "weightmodByType": {
+        "*-copper": 89,
+        "*-brass": 85,
+        "*-tinbronze": 76,
+        "*-bismuthbronze": 79,
+        "*-blackbronze": 90,
+        "*-iron": 78,
+        "*-gold": 193,
+        "*-lead": 113,
+        "*-tin": 72,
+        "*-chromium": 71,
+        "*-platinum": 215,
+        "*-titanium": 45,
+        "*-zinc": 71,
+        "*-silver": 105,
+        "*-bismuth": 97,
+        "*-molybdochalkos": 96,
+        "*-steel": 78,
+        "*-blistersteel": 78,
+        "*-meteoriciron": 78
+      }
+    }
+  }
+]

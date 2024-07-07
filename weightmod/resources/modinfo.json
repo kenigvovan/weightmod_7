@@ -1,0 +1,11 @@
+{
+  "type": "code",
+  "modid": "weightmod",
+  "name": "weightmod",
+  "author": "KenigVovan",
+  "description": "",
+  "version": "0.2.2",
+  "dependencies": {
+    "game": ""
+  }
+}
