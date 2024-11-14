@@ -49,7 +49,7 @@ namespace weightmod.src
             this.weightBar.SetValues(nullable1.Value, 0.0f, nullable2.Value);          
             this.lastWeight = nullable1.Value;
             this.lastMaxWeight = nullable2.Value;
-           // ComposeGuis();
+            //ComposeGuis();
         }
         public override void OnOwnPlayerDataReceived()
         {
@@ -81,28 +81,31 @@ namespace weightmod.src
                     BothSizing = ElementSizing.Fixed,
                     fixedWidth = ((double)num),
                     fixedHeight = 100
-                }.WithFixedAlignmentOffset(0.5, 0);
+                }.WithFixedAlignmentOffset(weightmod.Config.WEIGHT_HUD_X, weightmod.Config.WEIGHT_HUD_Y);
 
                 if(thirstBarFound)
                 {
-                    bounds1.fixedX += 249;
-                    bounds1.fixedY -= 12;
+                    bounds1.fixedX += 500;
+                    bounds1.fixedY -= 5;
                 }
                 else
                 {
-                    bounds1.fixedX += 249;
+                    bounds1.fixedX += 500;
+                    bounds1.fixedY += 5;
                 }
+                //bounds1.fixedY -= weightmod.Config.WEIGHT_HUD_Y;
                 this.Composers["weightbar"] = this.capi.Gui.CreateCompo("weight-statbar", bounds1.FlatCopy().FixedGrow(0.0, 20.0));
-                ElementBounds bounds2 = ElementStdBounds.Statbar(EnumDialogArea.LeftTop, (double)num * 0.41).WithFixedAlignmentOffset(0, -0);
+                
+                ElementBounds bounds2 = ElementStdBounds.Statbar(EnumDialogArea.LeftTop, (double)num * 0.41);
                 bounds2.WithFixedHeight(10.0);
             
                 ITreeAttribute treeAttribute2 = this.capi.World.Player.Entity.WatchedAttributes.GetTreeAttribute("weightmod");
 
                 var weightStatBar = new GuiElementStatbar(this.capi, bounds2, GuiStyle.XPBarColor, false, false);
 
-                this.Composers["weightbar"].BeginChildElements(bounds1)
+                this.Composers["weightbar"]//.BeginChildElements(bounds1)
                                            .AddInteractiveElement(weightStatBar, "weightstatbar")
-                                           .EndChildElements()
+                                           //.EndChildElements()
                                            .Compose();
 
                 this.weightBar = this.Composers["weightbar"].GetStatbar("weightstatbar");

@@ -112,5 +112,8 @@ namespace weightmod.src
             { "game:miningbag", 3300}
         };
         public string HUD_POSITION { get; set; } = "saturationstatbar";
+
+        public float WEIGHT_HUD_Y = 0;
+        public float WEIGHT_HUD_X = 0;
     }
 }

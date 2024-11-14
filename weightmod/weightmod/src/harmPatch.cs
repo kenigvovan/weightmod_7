@@ -56,7 +56,7 @@ namespace weightmod.src
            
             return;
         }
-        public static bool Prefix_ApplicableInAir(Vintagestory.GameContent.EntityInAir __instance, Entity entity, EntityPos pos, EntityControls controls)
+        public static bool Prefix_ApplicableInAir(PModuleOnGround __instance, Entity entity, EntityPos pos, EntityControls controls)
         {
             if (!(entity is EntityPlayer))
             {
@@ -73,7 +73,7 @@ namespace weightmod.src
             }
             return true;
         }
-        public static bool Prefix_ApplicableInLiquid(Vintagestory.GameContent.EntityInLiquid __instance, Entity entity, EntityPos pos, EntityControls controls)
+        public static bool Prefix_ApplicableInLiquid(PModulePlayerInLiquid __instance, Entity entity, EntityPos pos, EntityControls controls)
         {
             if (!(entity is EntityPlayer))
             {
@@ -85,12 +85,15 @@ namespace weightmod.src
                 //EntityBehaviorControlledPhysics
                 if (beBeh.isOverloaded())
                 {
+                    entity.Pos.Motion.X = 0;
+                    entity.Pos.Motion.Y = 0;
+                    entity.Pos.Motion.Z = 0;
                     return false;
                 }
             }
             return true;
         }
-        public static bool Prefix_ApplicableOnGround(Vintagestory.GameContent.EntityOnGround __instance, Entity entity, EntityPos pos, EntityControls controls)
+        public static bool Prefix_ApplicableOnGround(PModulePlayerInAir __instance, Entity entity, EntityPos pos, EntityControls controls)
         {         
             if (!(entity is EntityPlayer))
             {

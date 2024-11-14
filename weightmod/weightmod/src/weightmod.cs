@@ -13,6 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
+using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.Server;
@@ -47,9 +48,12 @@ namespace weightmod.src
         public void OnPlayerNowPlayingClient(IClientPlayer byPlayer)
         {
             //capi.World.Player
-           //var ep = new EntityBehaviorWeightable(byPlayer.Entity);
+            //var ep = new EntityBehaviorWeightable(byPlayer.Entity);
             //ep.PostInit();
             //byPlayer.Entity.AddBehavior(ep);
+            var ep = new EntityBehaviorWeightable(byPlayer.Entity);
+            ep.PostInit();
+            byPlayer.Entity.AddBehavior(ep);
         }
         public void OnPlayerDisconnect(IServerPlayer byPlayer)
         {
@@ -75,10 +79,10 @@ namespace weightmod.src
             base.Start(api);
             classBonuses = new Dictionary<string, float>();
             api.RegisterEntityBehaviorClass("affectedByItemsWeight", typeof(EntityBehaviorWeightable));
-            harmonyInstance = new Harmony(harmonyID);
-            harmonyInstance.Patch(typeof(Vintagestory.GameContent.EntityInAir).GetMethod("Applicable"), prefix: new HarmonyMethod(typeof(harmPatch).GetMethod("Prefix_ApplicableInAir")));
-            harmonyInstance.Patch(typeof(Vintagestory.GameContent.EntityInLiquid).GetMethod("Applicable"), prefix: new HarmonyMethod(typeof(harmPatch).GetMethod("Prefix_ApplicableInLiquid")));
-            harmonyInstance.Patch(typeof(Vintagestory.GameContent.EntityOnGround).GetMethod("Applicable"), prefix: new HarmonyMethod(typeof(harmPatch).GetMethod("Prefix_ApplicableOnGround")));
+            harmonyInstance = new Harmony(harmonyID); 
+            harmonyInstance.Patch(typeof(PModuleOnGround).GetMethod("Applicable"), prefix: new HarmonyMethod(typeof(harmPatch).GetMethod("Prefix_ApplicableOnGround")));
+            harmonyInstance.Patch(typeof(PModuleInLiquid).GetMethod("Applicable"), prefix: new HarmonyMethod(typeof(harmPatch).GetMethod("Prefix_ApplicableInLiquid")));
+            harmonyInstance.Patch(typeof(PModuleInAir).GetMethod("Applicable"), prefix: new HarmonyMethod(typeof(harmPatch).GetMethod("Prefix_ApplicableInAir")));
         }
         public weightmod()
         {
@@ -97,7 +101,7 @@ namespace weightmod.src
             capi = api;
             base.StartClientSide(api);
 
-            loadConfig();
+            loadConfig(api);
 
             api.Gui.RegisterDialog((GuiDialog)new HudWeightPlayer((ICoreClientAPI)api));
             harmonyInstance = new Harmony(harmonyID);
@@ -155,7 +159,7 @@ namespace weightmod.src
             sapi = api;
             base.StartServerSide(api);
 
-            loadConfig();
+            loadConfig(api);
 
             loadClassBonusesMap();
             api.Event.PlayerNowPlaying += OnPlayerNowPlaying;
@@ -344,24 +348,26 @@ namespace weightmod.src
                 }
             }
         }
-        public void loadConfig()
+        public void loadConfig(ICoreAPI api)
         {
             try
             {
-                Config = sapi.LoadModConfig<Config>(this.Mod.Info.ModID + ".json");
-                if (Config != null)
+                Config = api.LoadModConfig<Config>(this.Mod.Info.ModID + ".json");
+                if(Config == null)
                 {
+                    Config = new Config();
+                    api.StoreModConfig<Config>(Config, this.Mod.Info.ModID + ".json");
                     return;
                 }
             }
             catch (Exception e)
             {
-                var c = 3;
+                Config = new Config();
             }
 
 
-            Config = new Config();
-            sapi.StoreModConfig<Config>(Config, this.Mod.Info.ModID + ".json");
+            
+            api.StoreModConfig<Config>(Config, this.Mod.Info.ModID + ".json");
             return;
         }
         public override void Dispose()
