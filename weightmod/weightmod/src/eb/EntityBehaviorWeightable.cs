@@ -1,25 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
-using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.API.Util;
-using Vintagestory.Client.NoObf;
 using Vintagestory.Common;
-using Vintagestory.GameContent;
 
-namespace weightmod.src
+namespace weightmod.src.EB
 {
     public class EntityBehaviorWeightable : EntityBehavior
     {
+        public static Config config;
         bool shouldUpdate = true;
         bool changeMade = true;
         float accum = 0;
@@ -66,6 +57,7 @@ namespace weightmod.src
             get { return weightTree.GetFloat("currentweight"); }
             set { weightTree.SetFloat("currentweight", value); entity.WatchedAttributes.MarkPathDirty("weightmod"); }
         }
+        public static WeightStorage weightStorage;
         public void PostInit()
         {
             weightTree = entity.WatchedAttributes.GetTreeAttribute("weightmod");
@@ -77,32 +69,32 @@ namespace weightmod.src
             }
             if (entity.World.Side == EnumAppSide.Server)
             {
-                InventoryPlayerBackPacks playerBackpacks = (InventoryPlayerBackPacks)((this.entity as EntityPlayer).Player as IServerPlayer).InventoryManager.GetOwnInventory("backpack");
+                InventoryPlayerBackPacks playerBackpacks = (InventoryPlayerBackPacks)((entity as EntityPlayer).Player as IServerPlayer).InventoryManager.GetOwnInventory("backpack");
 
-                InventoryBasePlayer playerHotbar = (InventoryBasePlayer)((this.entity as EntityPlayer).Player as IServerPlayer).InventoryManager.GetOwnInventory("hotbar");
+                InventoryBasePlayer playerHotbar = (InventoryBasePlayer)((entity as EntityPlayer).Player as IServerPlayer).InventoryManager.GetOwnInventory("hotbar");
 
-                IInventory charakterInv = ((this.entity as EntityPlayer).Player as IServerPlayer).InventoryManager.GetOwnInventory("character");
+                IInventory charakterInv = ((entity as EntityPlayer).Player as IServerPlayer).InventoryManager.GetOwnInventory("character");
 
-                IInventory mouseInv = ((this.entity as EntityPlayer).Player as IServerPlayer).InventoryManager.GetOwnInventory("mouse");
+                IInventory mouseInv = ((entity as EntityPlayer).Player as IServerPlayer).InventoryManager.GetOwnInventory("mouse");
 
                 if (playerBackpacks == null || playerHotbar == null || charakterInv == null || mouseInv == null)
                 {
-                    weightmod.sapi.Event.RegisterCallback((dt =>
+                    weightmod.sapi.Event.RegisterCallback(dt =>
                     {
-                        playerBackpacks = (InventoryPlayerBackPacks)((this.entity as EntityPlayer).Player as IServerPlayer).InventoryManager.GetOwnInventory("backpack");
+                        playerBackpacks = (InventoryPlayerBackPacks)((entity as EntityPlayer).Player as IServerPlayer).InventoryManager.GetOwnInventory("backpack");
 
-                        playerHotbar = (InventoryBasePlayer)((this.entity as EntityPlayer).Player as IServerPlayer).InventoryManager.GetOwnInventory("hotbar");
+                        playerHotbar = (InventoryBasePlayer)((entity as EntityPlayer).Player as IServerPlayer).InventoryManager.GetOwnInventory("hotbar");
 
-                        charakterInv = ((this.entity as EntityPlayer).Player as IServerPlayer).InventoryManager.GetOwnInventory("character");
+                        charakterInv = ((entity as EntityPlayer).Player as IServerPlayer).InventoryManager.GetOwnInventory("character");
 
-                        mouseInv = ((this.entity as EntityPlayer).Player as IServerPlayer).InventoryManager.GetOwnInventory("mouse");
+                        mouseInv = ((entity as EntityPlayer).Player as IServerPlayer).InventoryManager.GetOwnInventory("mouse");
 
                         playerBackpacks.SlotModified += OnSlotModified;
                         playerHotbar.SlotModified += OnSlotModified;
                         charakterInv.SlotModified += OnSlotModified;
                         mouseInv.SlotModified += OnSlotModified;
 
-                    }), 80 * 1000);
+                    }, 80 * 1000);
                 }
                 else
                 {
@@ -118,7 +110,7 @@ namespace weightmod.src
                 entity.WatchedAttributes.SetAttribute("weightmod", weightTree = new TreeAttribute());
 
                 weight = 0;// attributes["currentweight"].AsFloat(0);
-                maxWeight = weightmod.Config.MAX_PLAYER_WEIGHT;
+                maxWeight = config.MAX_PLAYER_WEIGHT;
                 lastPercentModifier = 1;
                 lastWeightBonusBags = 0;
                 lastWeightBonus = 0;
@@ -129,11 +121,11 @@ namespace weightmod.src
 
             if (healthTree == null && entity.World.Side == EnumAppSide.Server)
             {
-                weightmod.sapi.Event.RegisterCallback((dt =>
+                weightmod.sapi.Event.RegisterCallback(dt =>
                 {
                     healthTree = entity.WatchedAttributes.GetTreeAttribute("health");
                     lastRatioHealth = healthTree.GetFloat("currenthealth") / healthTree.GetFloat("maxhealth");
-                }), 80 * 1000);
+                }, 80 * 1000);
                 lastRatioHealth = 1;
             }
             else
@@ -142,7 +134,7 @@ namespace weightmod.src
             }
             lastPercentModifier = weightTree.GetFloat("percentmodifier");
             weight = weightTree.GetFloat("currentweight");
-            maxWeight = weightmod.Config.MAX_PLAYER_WEIGHT;
+            maxWeight = config.MAX_PLAYER_WEIGHT;
             lastWeightBonusBags = 0;
             lastWeightBonus = weightTree.GetFloat("weightbonus");
 
@@ -163,7 +155,7 @@ namespace weightmod.src
         public bool isOverloaded()
         {
             var t = entity.Api;
-            return this.weight > this.maxWeight;
+            return weight > maxWeight;
         }
         public override string PropertyName()
         {
@@ -181,9 +173,9 @@ namespace weightmod.src
             currentWeightBonusBags = 0;
             shouldUpdate = false;
             //Backpacks
-            InventoryPlayerBackPacks playerBackpacks = (InventoryPlayerBackPacks)((this.entity as EntityPlayer).Player as IServerPlayer).InventoryManager.GetOwnInventory("backpack");
+            InventoryPlayerBackPacks playerBackpacks = (InventoryPlayerBackPacks)((entity as EntityPlayer).Player as IServerPlayer).InventoryManager.GetOwnInventory("backpack");
             //playerBackpacks.slot
-            
+
             //playerBackpacks.Player
             if (playerBackpacks != null)
             {
@@ -223,10 +215,10 @@ namespace weightmod.src
                     }
                 }
             }
-            
+
 
             //Hotbar
-            InventoryBasePlayer playerHotbar = (InventoryBasePlayer)((this.entity as EntityPlayer).Player as IServerPlayer).InventoryManager.GetOwnInventory("hotbar");
+            InventoryBasePlayer playerHotbar = (InventoryBasePlayer)((entity as EntityPlayer).Player as IServerPlayer).InventoryManager.GetOwnInventory("hotbar");
             {
                 if (playerHotbar != null)
                 {
@@ -234,19 +226,19 @@ namespace weightmod.src
                     {
                         ItemSlot itemSlot = playerHotbar[i];
                         if (itemSlot != null)
-                        {                        
+                        {
                             ItemStack itemStack = itemSlot.Itemstack;
                             if (itemStack != null)
                             {
                                 //petBackPackInventory
-                                if(itemStack.Attributes.HasAttribute("petBackPackInventory"))
+                                if (itemStack.Attributes.HasAttribute("petBackPackInventory"))
                                 {
                                     var tree = itemStack.Attributes.GetTreeAttribute("petBackPackInventory");
-                                    if(tree == null)
+                                    if (tree == null)
                                     {
                                         continue;
                                     }
-                                    if(tree.HasAttribute("slots"))
+                                    if (tree.HasAttribute("slots"))
                                     {
                                         if (tree.GetTreeAttribute("slots").Count > 0)
                                         {
@@ -266,7 +258,7 @@ namespace weightmod.src
                 }
             }
             //Character inventory
-            IInventory charakterInv =  ((this.entity as EntityPlayer).Player as IServerPlayer).InventoryManager.GetOwnInventory("character");
+            IInventory charakterInv = ((entity as EntityPlayer).Player as IServerPlayer).InventoryManager.GetOwnInventory("character");
             {
                 if (charakterInv != null)
                 {
@@ -290,13 +282,13 @@ namespace weightmod.src
                                         currentWeightBonusBags += itemStack.Collectible.Attributes["weightbonusbags"].AsFloat();
                                         continue;
                                     }
-                                }                               
+                                }
                             }
                         }
                     }
                 }
             }
-           IInventory mouseInv = ((this.entity as EntityPlayer).Player as IServerPlayer).InventoryManager.GetOwnInventory("mouse");
+            IInventory mouseInv = ((entity as EntityPlayer).Player as IServerPlayer).InventoryManager.GetOwnInventory("mouse");
             {
                 if (mouseInv != null)
                 {
@@ -308,45 +300,45 @@ namespace weightmod.src
                             ItemStack itemStack = itemSlot.Itemstack;
                             if (itemStack != null)
                             {
-                                if(itemStack.Attributes.HasAttribute("backpack"))
+                                if (itemStack.Attributes.HasAttribute("backpack"))
                                 {
                                     var atrTmp = itemStack.Attributes.GetTreeAttribute("backpack");
-                                    if(atrTmp.HasAttribute("slots"))
+                                    if (atrTmp.HasAttribute("slots"))
                                     {
                                         var slotsTmp = atrTmp.GetTreeAttribute("slots");
 
-                                        foreach(ItemstackAttribute it in slotsTmp.Values)
+                                        foreach (ItemstackAttribute it in slotsTmp.Values)
                                         {
-                                            if(it.value == null)
+                                            if (it.value == null)
                                             {
                                                 continue;
                                             }
-                                            if(it.value.Class is EnumItemClass.Item)
+                                            if (it.value.Class is EnumItemClass.Item)
                                             {
-                                                if (weightmod.itemIdToWeight.TryGetValue(it.value.Id, out float weight))
+                                                if (weightStorage.itemIdToWeight.TryGetValue(it.value.Id, out float weight))
                                                 {
                                                     currentCalculatedWeight += weight * it.value.StackSize;
                                                 }
                                             }
-                                            else if(it.value.Class is EnumItemClass.Block)
+                                            else if (it.value.Class is EnumItemClass.Block)
                                             {
-                                                if (weightmod.blockIdToWeight.TryGetValue(it.value.Id, out float weight))
+                                                if (weightStorage.blockIdToWeight.TryGetValue(it.value.Id, out float weight))
                                                 {
                                                     currentCalculatedWeight += weight * it.value.StackSize;
                                                 }
                                             }
 
-                                            
+
                                         }
                                     }
 
                                 }
 
-                            if (itemStack.Collectible.Attributes != null && itemStack.Collectible.Attributes["weightmod"].Exists)
-                            {
-                                currentCalculatedWeight += itemStack.Collectible.Attributes["weightmod"].AsFloat() * itemStack.StackSize;
-                                continue;
-                            }
+                                if (itemStack.Collectible.Attributes != null && itemStack.Collectible.Attributes["weightmod"].Exists)
+                                {
+                                    currentCalculatedWeight += itemStack.Collectible.Attributes["weightmod"].AsFloat() * itemStack.StackSize;
+                                    continue;
+                                }
 
                             }
                         }
@@ -355,7 +347,7 @@ namespace weightmod.src
             }
 
             //craftinggrid
-            IInventory craftingGridInv = ((this.entity as EntityPlayer).Player as IServerPlayer).InventoryManager.GetOwnInventory("craftinggrid");
+            IInventory craftingGridInv = ((entity as EntityPlayer).Player as IServerPlayer).InventoryManager.GetOwnInventory("craftinggrid");
             {
                 if (craftingGridInv != null)
                 {
@@ -382,14 +374,14 @@ namespace weightmod.src
                                             }
                                             if (it.value.Class is EnumItemClass.Item)
                                             {
-                                                if (weightmod.itemIdToWeight.TryGetValue(it.value.Id, out float weight))
+                                                if (weightStorage.itemIdToWeight.TryGetValue(it.value.Id, out float weight))
                                                 {
                                                     currentCalculatedWeight += weight * it.value.StackSize;
                                                 }
                                             }
                                             else if (it.value.Class is EnumItemClass.Block)
                                             {
-                                                if (weightmod.blockIdToWeight.TryGetValue(it.value.Id, out float weight))
+                                                if (weightStorage.blockIdToWeight.TryGetValue(it.value.Id, out float weight))
                                                 {
                                                     currentCalculatedWeight += weight * it.value.StackSize;
                                                 }
@@ -416,21 +408,21 @@ namespace weightmod.src
             {
                 currentCalculatedWeight = 0;
             }
-            
+
             return shouldUpdate;
         }
         private void OnSlotModified(int i)
         {
-            this.shouldRecalc = true;
+            shouldRecalc = true;
         }
         public override void OnReceivedServerPacket(int packetid, byte[] data, ref EnumHandling handled)
         {
-             if (packetid == 6166)
+            if (packetid == 6166)
             {
                 ITreeAttribute treeAttribute = new TreeAttribute();
                 SerializerUtil.FromBytes(data, (r) => treeAttribute.FromBytes(r));
-                this.weight = treeAttribute.GetFloat("currentweight");
-                this.maxWeight = treeAttribute.GetFloat("maxweight");
+                weight = treeAttribute.GetFloat("currentweight");
+                maxWeight = treeAttribute.GetFloat("maxweight");
             }
         }
         public void updateWeight()
@@ -439,19 +431,19 @@ namespace weightmod.src
             calculateWeightOfInventories();
 
             ITreeAttribute treeAttribute = entity.WatchedAttributes.GetTreeAttribute("weightmod");
-            
-            if(treeAttribute == null)
+
+            if (treeAttribute == null)
             {
                 return;
             }
 
             //if weight was changed
-            if(!shouldUpdate && (currentCalculatedWeight - lastCalculatedWeight) > 20)
+            if (!shouldUpdate && currentCalculatedWeight - lastCalculatedWeight > 20)
             {
                 shouldUpdate = true;
             }
             // health ration changed
-            if (!shouldUpdate && (lastPercentModifier - treeAttribute.GetFloat("percentmodifier")) > 0.09)
+            if (!shouldUpdate && lastPercentModifier - treeAttribute.GetFloat("percentmodifier") > 0.09)
             {
                 changeMade = true;
                 lastPercentModifier = treeAttribute.GetFloat("percentmodifier");
@@ -470,21 +462,21 @@ namespace weightmod.src
 
             if (changeMade || shouldUpdate)
             {
-                if (!weightmod.Config.PERCENT_MODIFIER_USED_ON_RAW_WEIGHT)
-                    maxWeight = (weightmod.Config.MAX_PLAYER_WEIGHT * lastRatioHealth + lastWeightBonusBags + lastWeightBonus + classBonus) * lastPercentModifier;
+                if (!config.PERCENT_MODIFIER_USED_ON_RAW_WEIGHT)
+                    maxWeight = (config.MAX_PLAYER_WEIGHT * lastRatioHealth + lastWeightBonusBags + lastWeightBonus + classBonus) * lastPercentModifier;
                 else
-                    maxWeight = weightmod.Config.MAX_PLAYER_WEIGHT * lastPercentModifier * lastRatioHealth + lastWeightBonusBags + lastWeightBonus + classBonus;
+                    maxWeight = config.MAX_PLAYER_WEIGHT * lastPercentModifier * lastRatioHealth + lastWeightBonusBags + lastWeightBonus + classBonus;
             }
 
-            if (maxWeight < weightmod.Config.MAX_PLAYER_WEIGHT * weightmod.Config.RATIO_MIN_MAX_WEIGHT_PLAYER_HEALTH)
+            if (maxWeight < config.MAX_PLAYER_WEIGHT * config.RATIO_MIN_MAX_WEIGHT_PLAYER_HEALTH)
             {
-                maxWeight = weightmod.Config.MAX_PLAYER_WEIGHT * weightmod.Config.RATIO_MIN_MAX_WEIGHT_PLAYER_HEALTH;
+                maxWeight = config.MAX_PLAYER_WEIGHT * config.RATIO_MIN_MAX_WEIGHT_PLAYER_HEALTH;
             }
 
             if (currentCalculatedWeight > maxWeight)
             {
                 //Processed in harmPatch (Prefix_DoApplyOnGround/Prefix_DoApplyInLiquid) using isOverloaded
-                entity.Stats.Set("walkspeed", "weightmod", (float)(-2), true);
+                entity.Stats.Set("walkspeed", "weightmod", -2, true);
                 if ((entity as EntityAgent).MountedOn != null)
                 {
                     (entity as EntityAgent).TryUnmount();
@@ -492,7 +484,7 @@ namespace weightmod.src
             }
             //when player is not overburden yet but currentweight is across threshold value from config,
             //slower movespeed
-            else if (currentCalculatedWeight > maxWeight * weightmod.Config.WEIGH_PLAYER_THRESHOLD)
+            else if (currentCalculatedWeight > maxWeight * config.WEIGH_PLAYER_THRESHOLD)
             {
                 entity.Stats.Set("walkspeed", "weightmod", (float)(-0.2 * (currentCalculatedWeight / maxWeight)), true);
             }
@@ -521,33 +513,18 @@ namespace weightmod.src
             if (entity.World.Api.Side == EnumAppSide.Server)
             {
                 accum += deltaTime;
-                if (accum >= weightmod.Config.HOW_OFTEN_RECHECK && shouldRecalc)
+                if (accum >= config.HOW_OFTEN_RECHECK && shouldRecalc)
                 {
                     shouldRecalc = false;
-                    accum = 0;                   
+                    accum = 0;
                     updateWeight();
                 }
             }
         }
 
-       /* public override void OnEntityDeath(DamageSource damageSourceForDeath)
-        {
-            if (this.entity.World.Side == EnumAppSide.Server)
-            {
-                updateWeight();
-                if (currentCalculatedWeight < 0)
-                {
-                    currentCalculatedWeight = 0;
-                }
-                if ((entity as EntityPlayer).Player.WorldData.CurrentGameMode == EnumGameMode.Creative)
-                {
-                    currentCalculatedWeight = 0;
-                }
-            }
-        }*/
         public override void OnEntityRevive()
         {
-            if (this.entity.World.Side == EnumAppSide.Server)
+            if (entity.World.Side == EnumAppSide.Server)
             {
                 updateWeight();
                 if (currentCalculatedWeight < 0)
@@ -563,7 +540,7 @@ namespace weightmod.src
         public override void OnEntityReceiveDamage(DamageSource damageSource, ref float damage)
         {
             base.OnEntityReceiveDamage(damageSource, ref damage);
-            if(healthTree == null)
+            if (healthTree == null)
             {
                 return;
             }

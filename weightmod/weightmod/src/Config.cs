@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Vintagestory.API.Datastructures;
 
 namespace weightmod.src
@@ -10,6 +6,11 @@ namespace weightmod.src
 
     public class Config
     {
+        public class ItemWeightInfo
+        {
+            public float? Weight { get; set; }
+            public string Category { get; set; }
+        }
         public float MAX_PLAYER_WEIGHT { get; set; } = 20000;
 
         public float WEIGH_PLAYER_THRESHOLD { get; set; } = 0.7f;
@@ -95,9 +96,47 @@ namespace weightmod.src
 
         };
 
-        public Dictionary<string, int> WEIGHTS_FOR_BLOCKS { get; set; } = new Dictionary<string, int>
+        public Dictionary<string, float> BASE_WEIGHTS_BY_CATEGORY { get; set; } = new Dictionary<string, float>
         {
-            { "game:ore-poor", 170}
+            {"tool", 500f},
+            {"weapon", 800f},
+            {"armor", 1000f},
+            {"ore", 1000f},
+            {"metal", 800f},
+            {"wood", 400f},
+            {"stone", 1000f},
+            {"gem", 200f},
+            {"woodblock", 400f},
+            {"stoneblock", 1000f},
+            {"metalblock", 1200f},
+            {"glassblock", 600f},
+            {"food", 100f},
+            {"craftingmaterial", 200f},
+            {"clothing", 300f},
+            {"misc", 200f}
+        };
+        public Dictionary<string, float> MATERIAL_MULTIPLIERS { get; set; } = new Dictionary<string, float>
+        {
+            {"wood", 0.8f},
+            {"stone", 1.2f},
+            {"metal", 1.5f},
+            {"cloth", 0.3f},
+            {"leather", 0.5f},
+            {"glass", 0.7f},
+            {"gem", 1.0f}
+        };
+
+        public Dictionary<string, float> WEIGHTS_FOR_BLOCKS { get; set; } = new Dictionary<string, float>
+        {
+
+        };
+        public Dictionary<string, ItemWeightInfo> WEIGHTINFOS_FOR_ITEMS { get; set; } = new Dictionary<string, ItemWeightInfo>
+        {
+
+        };
+        public Dictionary<string, ItemWeightInfo> WEIGHTINFOS_FOR_BLOCKS { get; set; } = new Dictionary<string, ItemWeightInfo>
+        {
+
         };
 
         public Dictionary<string, int> WEIGHTS_FOR_ENDS_WITH { get; set; } = new Dictionary<string, int>
@@ -115,5 +154,9 @@ namespace weightmod.src
 
         public float WEIGHT_HUD_Y = 0;
         public float WEIGHT_HUD_X = 0;
+
+        public bool USE_WEIGHT_ORACLE = false;
+
+        public bool WEIGHT_ORACLE_DONE = false;
     }
 }
