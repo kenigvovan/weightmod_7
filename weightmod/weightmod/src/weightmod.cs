@@ -74,6 +74,7 @@ namespace weightmod.src
             base.StartClientSide(api);
             capi = api;
             loadConfig(api);
+            EntityBehaviorWeightable.config = config;
 
             api.Gui.RegisterDialog((GuiDialog)new HudWeightPlayer((ICoreClientAPI)api));
             harmonyInstance = new Harmony(harmonyID);
