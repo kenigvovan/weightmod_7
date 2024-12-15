@@ -21,6 +21,7 @@ namespace weightmod.src
     {
         public static ICoreServerAPI sapi;
         public static ICoreClientAPI capi;
+        public static bool clientBehaviorInit = false;
         private static Dictionary<string, float> classBonuses = new Dictionary<string, float>();
         WeightStorage weightStorage;
         WeightOracle weightOracle;
@@ -39,9 +40,29 @@ namespace weightmod.src
         }
         public void OnPlayerNowPlayingClient(IClientPlayer byPlayer)
         {
-            var ep = new EntityBehaviorWeightable(byPlayer.Entity);
-            ep.PostInit();
-            byPlayer.Entity.AddBehavior(ep);
+            if(byPlayer == null || byPlayer.Entity == null)
+            {
+                weightmod.capi.Event.RegisterCallback((dt =>
+                {
+                    var pl = weightmod.capi.World.Player;
+                    var ep = new EntityBehaviorWeightable(pl.Entity);
+                    ep.PostInit();
+                    byPlayer.Entity.AddBehavior(ep);
+                    weightmod.clientBehaviorInit = true;
+                }
+            ), 60 * 1000);
+            }
+            else
+            {
+                if (weightmod.capi.World.Player.PlayerUID == byPlayer.Entity.PlayerUID)
+                {
+                    var ep = new EntityBehaviorWeightable(byPlayer.Entity);
+                    ep.PostInit();
+                    byPlayer.Entity.AddBehavior(ep);
+                    weightmod.clientBehaviorInit = true;
+                }
+            }
+           
         }
         public void OnPlayerDisconnect(IServerPlayer byPlayer)
         {
@@ -72,6 +93,7 @@ namespace weightmod.src
         public override void StartClientSide(ICoreClientAPI api)
         {
             base.StartClientSide(api);
+            weightmod.clientBehaviorInit = false;
             capi = api;
             loadConfig(api);
             EntityBehaviorWeightable.config = config;
@@ -243,6 +265,7 @@ namespace weightmod.src
             clientChannel = null;
             EntityBehaviorWeightable.config = null;
             EntityBehaviorWeightable.weightStorage = null;
+            weightmod.clientBehaviorInit = false;
         }
         static readonly DateTime start = new DateTime(1970, 1, 1);
         public static long getEpochSeconds()
