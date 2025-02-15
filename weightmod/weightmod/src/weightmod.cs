@@ -5,18 +5,16 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
-using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.Server;
+using Vintagestory.GameContent;
+using weightmod.src.EB;
+using weightmod.src.gui;
+using weightmod.src.harmony;
 
 namespace weightmod.src
 {
@@ -24,36 +22,59 @@ namespace weightmod.src
     {
         public static ICoreServerAPI sapi;
         public static ICoreClientAPI capi;
-        private static Dictionary<string, float> mapLastCalculatedPlayerWeight = new Dictionary<string, float>();
-        private static Dictionary<string, bool> inventoryWasModified = new Dictionary<string, bool>();
+        public static bool clientBehaviorInit = false;
         private static Dictionary<string, float> classBonuses = new Dictionary<string, float>();
-        public static Dictionary<int, float> itemIdToWeight = new Dictionary<int, float>();
-        public static Dictionary<int, float> blockIdToWeight = new Dictionary<int, float>();
-        public static Dictionary<int, float> itemBonusIdToWeight = new Dictionary<int, float>();
-        public static string bArrIITW;
-        public static string bArrBITW;
-        public static string bArrIBITW;
+        WeightStorage weightStorage;
+        WeightOracle weightOracle;
+
         public static Harmony harmonyInstance;
         internal static IServerNetworkChannel serverChannel;
         internal static IClientNetworkChannel clientChannel;
         public const string harmonyID = "weightmod.Patches";
         static weightmod instance;
-        public static Config Config { get; private set; } = null!;
+        public static Config config { get; private set; } = null!;
         public void OnPlayerNowPlaying(IServerPlayer byPlayer)
         {
             var ep = new EntityBehaviorWeightable(byPlayer.Entity);
             ep.PostInit();
             byPlayer.Entity.AddBehavior(ep);
         }
+
+        public void CheckNullAndInit()
+        {
+            if(clientBehaviorInit)
+            {
+                return;
+            }
+            if (weightmod.capi == null)
+            {
+                return ;
+            }
+            if (weightmod.capi.World == null || weightmod.capi.World.Player == null)
+            {
+                weightmod.capi.Event.RegisterCallback((dt =>
+                {
+                    CheckNullAndInit();
+                }
+            ), 60 * 1000);
+            }
+            else
+            {
+                var pl = weightmod.capi.World.Player;
+                var ep = new EntityBehaviorWeightable(pl.Entity);
+                ep.PostInit();
+                weightmod.capi.World.Player.Entity.AddBehavior(ep);
+                weightmod.clientBehaviorInit = true;
+            }    
+        }
+
         public void OnPlayerNowPlayingClient(IClientPlayer byPlayer)
         {
-            //capi.World.Player
-            //var ep = new EntityBehaviorWeightable(byPlayer.Entity);
-            //ep.PostInit();
-            //byPlayer.Entity.AddBehavior(ep);
-            var ep = new EntityBehaviorWeightable(byPlayer.Entity);
-            ep.PostInit();
-            byPlayer.Entity.AddBehavior(ep);
+            if (clientBehaviorInit)
+            {
+                return;
+            }
+            CheckNullAndInit();       
         }
         public void OnPlayerDisconnect(IServerPlayer byPlayer)
         {
@@ -66,20 +87,12 @@ namespace weightmod.src
         {
             return classBonuses;
         }
-        public static Dictionary<string, float> getlastCalculatedPlayerWeight()
-        {
-            return mapLastCalculatedPlayerWeight;
-        }
-        public static Dictionary<string, bool> getinventoryWasModified()
-        {
-            return inventoryWasModified;
-        }
         public override void Start(ICoreAPI api)
         {
             base.Start(api);
             classBonuses = new Dictionary<string, float>();
             api.RegisterEntityBehaviorClass("affectedByItemsWeight", typeof(EntityBehaviorWeightable));
-            harmonyInstance = new Harmony(harmonyID); 
+            harmonyInstance = new Harmony(harmonyID);
             harmonyInstance.Patch(typeof(PModuleOnGround).GetMethod("Applicable"), prefix: new HarmonyMethod(typeof(harmPatch).GetMethod("Prefix_ApplicableOnGround")));
             harmonyInstance.Patch(typeof(PModuleInLiquid).GetMethod("Applicable"), prefix: new HarmonyMethod(typeof(harmPatch).GetMethod("Prefix_ApplicableInLiquid")));
             harmonyInstance.Patch(typeof(PModuleInAir).GetMethod("Applicable"), prefix: new HarmonyMethod(typeof(harmPatch).GetMethod("Prefix_ApplicableInAir")));
@@ -88,20 +101,14 @@ namespace weightmod.src
         {
             instance = this;
         }
-        public static weightmod getInstance()
-        {
-            return instance;
-        }
+
         public override void StartClientSide(ICoreClientAPI api)
         {
-            itemIdToWeight = new Dictionary<int, float>();
-            blockIdToWeight = new Dictionary<int, float>();
-            itemBonusIdToWeight = new Dictionary<int, float>();
-
-            capi = api;
             base.StartClientSide(api);
-
+            weightmod.clientBehaviorInit = false;
+            capi = api;
             loadConfig(api);
+            EntityBehaviorWeightable.config = config;
 
             api.Gui.RegisterDialog((GuiDialog)new HudWeightPlayer((ICoreClientAPI)api));
             harmonyInstance = new Harmony(harmonyID);
@@ -117,7 +124,16 @@ namespace weightmod.src
                 {
                     if (tmpDict.TryGetValue(item.Id, out float val))
                     {
-                        item.Attributes.Token["weightmod"] = val;
+                        if (item.Attributes != null)
+                        {
+                            item.Attributes.Token["weightmod"] = val;
+                        }
+                        else
+                        {
+                            JToken jt = JToken.Parse("{}");
+                            jt["weightmod"] = val;
+                            item.Attributes = new JsonObject(jt);
+                        }
                     }
                 }
                 tmpDict = JsonConvert.DeserializeObject<Dictionary<int, float>>(Decompress(packet.bITW));
@@ -131,6 +147,9 @@ namespace weightmod.src
                         }
                         else
                         {
+                            JToken jt = JToken.Parse("{}");
+                            jt["weightmod"] = val;
+                            item.Attributes = new JsonObject(jt);
                         }
                     }
                 }
@@ -143,6 +162,12 @@ namespace weightmod.src
                         {
                             item.Attributes.Token["weightbonusbags"] = val;
                         }
+                        else
+                        {
+                            JToken jt = JToken.Parse("{}");
+                            jt["weightbonusbags"] = val;
+                            item.Attributes = new JsonObject(jt);
+                        }
                     }
                 }
 
@@ -150,171 +175,39 @@ namespace weightmod.src
             capi.Event.PlayerJoin += OnPlayerNowPlayingClient;
         }
         public override void StartServerSide(ICoreServerAPI api)
-        {
-            mapLastCalculatedPlayerWeight = new Dictionary<string, float>();
-            inventoryWasModified = new Dictionary<string, bool>();          
-            itemIdToWeight = new Dictionary<int, float>();
-            blockIdToWeight = new Dictionary<int, float>();
-            itemBonusIdToWeight = new Dictionary<int, float>();          
+        {                           
             sapi = api;
             base.StartServerSide(api);
 
             loadConfig(api);
+            EntityBehaviorWeightable.config = config;
+            serverChannel = sapi.Network.RegisterChannel("weightmod");
+
+            weightStorage = new WeightStorage(api, config);
+            weightOracle = new WeightOracle(api, config);
 
             loadClassBonusesMap();
             api.Event.PlayerNowPlaying += OnPlayerNowPlaying;
             api.Event.PlayerDisconnect += OnPlayerDisconnect;
             api.Event.ServerRunPhase(EnumServerRunPhase.Shutdown, onServerExit);
-            api.Event.ServerRunPhase(EnumServerRunPhase.RunGame, fillWeightDictionary);
-            serverChannel = sapi.Network.RegisterChannel("weightmod");
+            api.Event.ServerRunPhase(EnumServerRunPhase.RunGame, FillDictAndSetWeight);
+            
             serverChannel.RegisterMessageType(typeof(syncWeightPacket));          
-            api.Event.PlayerNowPlaying += sendNewValues;
+            api.Event.PlayerNowPlaying += weightStorage.sendNewValues;
             harmonyInstance = new Harmony(harmonyID);
-            harmonyInstance.Patch(typeof(Vintagestory.API.Common.InventoryBase).GetMethod("DidModifyItemSlot"), postfix: new HarmonyMethod(typeof(harmPatch).GetMethod("Prefix_OnItemSlotModified")));
-  
+            harmonyInstance.Patch(typeof(Vintagestory.API.Common.InventoryBase).GetMethod("DidModifyItemSlot"), postfix: new HarmonyMethod(typeof(harmPatch).GetMethod("Prefix_OnItemSlotModified"))); 
+            EntityBehaviorWeightable.weightStorage = weightStorage;
         }
-        public void sendNewValues(IServerPlayer byPlayer)
+
+
+        private void FillDictAndSetWeight()
         {
-            sapi.Event.RegisterCallback((dt =>
+            if (weightmod.config.USE_WEIGHT_ORACLE && !weightmod.config.WEIGHT_ORACLE_DONE)
             {
-                if (byPlayer.ConnectionState == EnumClientState.Playing)
-                {
-                    serverChannel.SendPacket(new syncWeightPacket()
-                    {
-                        iITW = bArrIITW,
-                        bITW = bArrBITW,
-                        iBITW = bArrIBITW
-
-                    },
-                    byPlayer);                   
-                }
+                weightOracle.FillConfigDicts();
             }
-            ), 20 * 1000);                      
-        }
-        public void fillWeightDictionary()
-        {
-            string[] tmp = new string[2];
-            foreach(var it in sapi.World.Items)
-            {
-                foreach(var it_prepared in Config.WEIGHTS_FOR_ITEMS)
-                {
-                    tmp = it_prepared.Key.Split(':');
-                    if(it.Code != null && it.Code.Domain.Equals(tmp[0]) && it.Code.Path.Contains(tmp[1]))
-                    {
-                     
-                        if(itemIdToWeight.ContainsKey(it.Id))
-                        {
-                            continue;
-                        }
-                        if (it.Attributes != null)
-                        {
-                            it.Attributes.Token["weightmod"] = it_prepared.Value;                           
-                            it.Attributes = new JsonObject(it.Attributes.Token);
-                            itemIdToWeight.Add(it.Id, it_prepared.Value);
-                        }
-                        /*else
-                        {
-                            JToken jt = JToken.Parse("{}");
-                            jt["weightmod"] = it_prepared.Value;
-                            it.Attributes = new JsonObject(jt);
-                        }*/
-                    }
-                }              
-            }
-            foreach (var it in sapi.World.Blocks)
-            {
-                foreach (var it_prepared in Config.WEIGHTS_FOR_BLOCKS)
-                {
-                    tmp = it_prepared.Key.Split(':');
-                    if (it.Code != null && it.Code.Domain.Equals(tmp[0]) && it.Code.Path.Contains(tmp[1]))
-                    {
-                        if (itemIdToWeight.ContainsKey(it.Id))
-                        {
-                            continue;
-                        }
-                        if (it.Attributes != null)
-                        {
-                            it.Attributes.Token["weightmod"] = it_prepared.Value;
-                            it.Attributes = new JsonObject(it.Attributes.Token);
-                            //itemIdToWeight.Add(it.Id, it_prepared.Value);
-                        }
-                        blockIdToWeight.Add(it.Id, it_prepared.Value);
-                    }
-                }
-            }
-            foreach (var it in sapi.World.Items)
-            {
-                foreach (var it_prepared in Config.WEIGHTS_BONUS_ITEMS)
-                {
-                    tmp = it_prepared.Key.Split(':');
-                    if (it.Code != null && it.Code.Domain.Equals(tmp[0]) && it.Code.Path.Equals(tmp[1]))
-                    {
-                        if (itemIdToWeight.ContainsKey(it.Id))
-                        {
-                            continue;
-                        }
-                        if (it.Attributes != null)
-                        {
-                            it.Attributes.Token["weightbonusbags"] = it_prepared.Value;
-                            it.Attributes = new JsonObject(it.Attributes.Token);
-                            //itemIdToWeight.Add(it.Id, it_prepared.Value);
-                        }
-                        itemBonusIdToWeight.Add(it.Id, it_prepared.Value);
-                    }
-                }
-            }
-            foreach (var it in sapi.World.Items)
-            {
-                foreach (var it_prepared in Config.WEIGHTS_FOR_ENDS_WITH)
-                {
-                    tmp = it_prepared.Key.Split(':');
-                    if (it.Code != null && it.Code.Domain.Equals(tmp[0]) && it.Code.Path.EndsWith(tmp[1]))
-                    {
-                        if (itemIdToWeight.ContainsKey(it.Id))
-                        {
-                            continue;
-                        }
-                        if (it.Attributes != null)
-                        {
-                            it.Attributes.Token["weightmod"] = it_prepared.Value;
-                            it.Attributes = new JsonObject(it.Attributes.Token);
-                            //itemIdToWeight.Add(it.Id, it_prepared.Value);
-                        }
-                        itemIdToWeight.Add(it.Id, it_prepared.Value);
-                    }
-                }
-            }
-
-            string tmpStr;
-            tmpStr = JsonConvert.SerializeObject(itemIdToWeight, Formatting.Indented);
-            bArrIITW = compressStr(tmpStr);
-            tmpStr = JsonConvert.SerializeObject(blockIdToWeight, Formatting.Indented);
-            bArrBITW = compressStr(tmpStr);
-            tmpStr = JsonConvert.SerializeObject(itemBonusIdToWeight, Formatting.Indented);
-            bArrIBITW = compressStr(tmpStr);
-        }
-        public string compressStr(string inStr)
-        {
-            byte[] compressedBytes;
-            using (var uncompressedStream = new MemoryStream(Encoding.UTF8.GetBytes(inStr)))
-            {
-                using (var compressedStream = new MemoryStream())
-                {
-                    // setting the leaveOpen parameter to true to ensure that compressedStream will not be closed when compressorStream is disposed
-                    // this allows compressorStream to close and flush its buffers to compressedStream and guarantees that compressedStream.ToArray() can be called afterward
-                    // although MSDN documentation states that ToArray() can be called on a closed MemoryStream, I don't want to rely on that very odd behavior should it ever change
-                    using (var compressorStream = new DeflateStream(compressedStream, CompressionLevel.Fastest, true))
-                    {
-                        uncompressedStream.CopyTo(compressorStream);
-                    }
-
-                    // call compressedStream.ToArray() after the enclosing DeflateStream has closed and flushed its buffer to compressedStream
-                    compressedBytes = compressedStream.ToArray();
-                }
-            }
-
-            return Convert.ToBase64String(compressedBytes);
-        }
+            weightStorage.ChangeCollectablesWeight();
+        }    
         public static string Decompress(string compressedString)
         {
             byte[] decompressedBytes;
@@ -339,7 +232,7 @@ namespace weightmod.src
         }
         public static void loadClassBonusesMap()
         {
-            foreach (string it in Config.CLASS_WEIGHT_BONUS.Split(';'))
+            foreach (string it in config.CLASS_WEIGHT_BONUS.Split(';'))
             {
                 if (it.Length != 0)
                 {
@@ -352,22 +245,20 @@ namespace weightmod.src
         {
             try
             {
-                Config = api.LoadModConfig<Config>(this.Mod.Info.ModID + ".json");
-                if(Config == null)
+                config = api.LoadModConfig<Config>(this.Mod.Info.ModID + ".json");
+                if(config == null)
                 {
-                    Config = new Config();
-                    api.StoreModConfig<Config>(Config, this.Mod.Info.ModID + ".json");
+                    config = new();
+                    api.StoreModConfig<Config>(config, this.Mod.Info.ModID + ".json");
                     return;
                 }
             }
             catch (Exception e)
             {
-                Config = new Config();
+                config = new Config();
             }
 
-
-            
-            api.StoreModConfig<Config>(Config, this.Mod.Info.ModID + ".json");
+            api.StoreModConfig<Config>(config, this.Mod.Info.ModID + ".json");
             return;
         }
         public override void Dispose()
@@ -376,26 +267,17 @@ namespace weightmod.src
             {
                 harmonyInstance.UnpatchAll(harmonyID);
             }
-            /*classBonuses.Clear();
-            itemIdToWeight.Clear();
-            blockIdToWeight.Clear();
-            itemBonusIdToWeight.Clear();*/
 
-            Config = null;
+            config = null;
             sapi = null;
             capi = null;
-            mapLastCalculatedPlayerWeight = null;
-            inventoryWasModified = null;
             classBonuses = null;
-            itemIdToWeight = null;
-            blockIdToWeight = null;
-            itemBonusIdToWeight = null;
-            bArrIITW = null;
-            bArrBITW = null;
-            bArrIBITW = null;
             harmonyInstance = null;
             serverChannel = null;
             clientChannel = null;
+            EntityBehaviorWeightable.config = null;
+            EntityBehaviorWeightable.weightStorage = null;
+            weightmod.clientBehaviorInit = false;
         }
         static readonly DateTime start = new DateTime(1970, 1, 1);
         public static long getEpochSeconds()
