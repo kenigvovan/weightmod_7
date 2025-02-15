@@ -11,6 +11,7 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.Server;
+using Vintagestory.GameContent;
 using weightmod.src.EB;
 using weightmod.src.gui;
 using weightmod.src.harmony;
@@ -38,31 +39,42 @@ namespace weightmod.src
             ep.PostInit();
             byPlayer.Entity.AddBehavior(ep);
         }
-        public void OnPlayerNowPlayingClient(IClientPlayer byPlayer)
+
+        public void CheckNullAndInit()
         {
-            if(byPlayer == null || byPlayer.Entity == null)
+            if(clientBehaviorInit)
+            {
+                return;
+            }
+            if (weightmod.capi == null)
+            {
+                return ;
+            }
+            if (weightmod.capi.World == null || weightmod.capi.World.Player == null)
             {
                 weightmod.capi.Event.RegisterCallback((dt =>
                 {
-                    var pl = weightmod.capi.World.Player;
-                    var ep = new EntityBehaviorWeightable(pl.Entity);
-                    ep.PostInit();
-                    byPlayer.Entity.AddBehavior(ep);
-                    weightmod.clientBehaviorInit = true;
+                    CheckNullAndInit();
                 }
             ), 60 * 1000);
             }
             else
             {
-                if (weightmod.capi.World.Player.PlayerUID == byPlayer.Entity.PlayerUID)
-                {
-                    var ep = new EntityBehaviorWeightable(byPlayer.Entity);
-                    ep.PostInit();
-                    byPlayer.Entity.AddBehavior(ep);
-                    weightmod.clientBehaviorInit = true;
-                }
+                var pl = weightmod.capi.World.Player;
+                var ep = new EntityBehaviorWeightable(pl.Entity);
+                ep.PostInit();
+                weightmod.capi.World.Player.Entity.AddBehavior(ep);
+                weightmod.clientBehaviorInit = true;
+            }    
+        }
+
+        public void OnPlayerNowPlayingClient(IClientPlayer byPlayer)
+        {
+            if (clientBehaviorInit)
+            {
+                return;
             }
-           
+            CheckNullAndInit();       
         }
         public void OnPlayerDisconnect(IServerPlayer byPlayer)
         {
@@ -81,9 +93,9 @@ namespace weightmod.src
             classBonuses = new Dictionary<string, float>();
             api.RegisterEntityBehaviorClass("affectedByItemsWeight", typeof(EntityBehaviorWeightable));
             harmonyInstance = new Harmony(harmonyID);
-            harmonyInstance.Patch(typeof(Vintagestory.GameContent.EntityInAir).GetMethod("Applicable"), prefix: new HarmonyMethod(typeof(harmPatch).GetMethod("Prefix_ApplicableInAir")));
-            harmonyInstance.Patch(typeof(Vintagestory.GameContent.EntityInLiquid).GetMethod("Applicable"), prefix: new HarmonyMethod(typeof(harmPatch).GetMethod("Prefix_ApplicableInLiquid")));
-            harmonyInstance.Patch(typeof(Vintagestory.GameContent.EntityOnGround).GetMethod("Applicable"), prefix: new HarmonyMethod(typeof(harmPatch).GetMethod("Prefix_ApplicableOnGround")));
+            harmonyInstance.Patch(typeof(PModuleOnGround).GetMethod("Applicable"), prefix: new HarmonyMethod(typeof(harmPatch).GetMethod("Prefix_ApplicableOnGround")));
+            harmonyInstance.Patch(typeof(PModuleInLiquid).GetMethod("Applicable"), prefix: new HarmonyMethod(typeof(harmPatch).GetMethod("Prefix_ApplicableInLiquid")));
+            harmonyInstance.Patch(typeof(PModuleInAir).GetMethod("Applicable"), prefix: new HarmonyMethod(typeof(harmPatch).GetMethod("Prefix_ApplicableInAir")));
         }
         public weightmod()
         {
