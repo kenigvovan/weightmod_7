@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Text;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -12,6 +13,7 @@ using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.Server;
 using Vintagestory.GameContent;
+using weightmod.src.eb;
 using weightmod.src.EB;
 using weightmod.src.gui;
 using weightmod.src.harmony;
@@ -33,13 +35,6 @@ namespace weightmod.src
         public const string harmonyID = "weightmod.Patches";
         static weightmod instance;
         public static Config config { get; private set; } = null!;
-        public void OnPlayerNowPlaying(IServerPlayer byPlayer)
-        {
-            var ep = new EntityBehaviorWeightable(byPlayer.Entity);
-            ep.PostInit();
-            byPlayer.Entity.AddBehavior(ep);
-        }
-
         public void CheckNullAndInit()
         {
             if(clientBehaviorInit)
@@ -61,8 +56,8 @@ namespace weightmod.src
             else
             {
                 var pl = weightmod.capi.World.Player;
-                var ep = new EntityBehaviorWeightable(pl.Entity);
-                ep.PostInit();
+                var ep = new EntityBehaviorPlayerWeightable(pl.Entity);
+                //ep.PostInit();
                 weightmod.capi.World.Player.Entity.AddBehavior(ep);
                 weightmod.clientBehaviorInit = true;
             }    
@@ -78,9 +73,9 @@ namespace weightmod.src
         }
         public void OnPlayerDisconnect(IServerPlayer byPlayer)
         {
-            if(byPlayer.Entity.HasBehavior<EntityBehaviorWeightable>())
+            if(byPlayer.Entity.HasBehavior<EntityBehaviorPlayerWeightable>())
             {
-                byPlayer.Entity.RemoveBehavior(byPlayer.Entity.GetBehavior<EntityBehaviorWeightable>());
+                byPlayer.Entity.RemoveBehavior(byPlayer.Entity.GetBehavior<EntityBehaviorPlayerWeightable>());
             }
         }
         public static Dictionary<string, float> getclassBonuses()
@@ -91,7 +86,10 @@ namespace weightmod.src
         {
             base.Start(api);
             classBonuses = new Dictionary<string, float>();
-            api.RegisterEntityBehaviorClass("affectedByItemsWeight", typeof(EntityBehaviorWeightable));
+            api.RegisterEntityBehaviorClass("affectedByItemsWeight", typeof(EntityBehaviorPlayerWeightable));
+            api.RegisterEntityBehaviorClass("affectedByItemsWeightElk", typeof(EntityBehaviorElkWeightable));
+            api.RegisterEntityBehaviorClass("showweightinfo", typeof(EntityBehaviorShowWeightInfo));
+
             harmonyInstance = new Harmony(harmonyID);
             harmonyInstance.Patch(typeof(PModuleOnGround).GetMethod("Applicable"), prefix: new HarmonyMethod(typeof(harmPatch).GetMethod("Prefix_ApplicableOnGround")));
             harmonyInstance.Patch(typeof(PModuleInLiquid).GetMethod("Applicable"), prefix: new HarmonyMethod(typeof(harmPatch).GetMethod("Prefix_ApplicableInLiquid")));
@@ -108,7 +106,8 @@ namespace weightmod.src
             weightmod.clientBehaviorInit = false;
             capi = api;
             loadConfig(api);
-            EntityBehaviorWeightable.config = config;
+            
+            EntityBehaviorPlayerWeightable.config = config;
 
             api.Gui.RegisterDialog((GuiDialog)new HudWeightPlayer((ICoreClientAPI)api));
             harmonyInstance = new Harmony(harmonyID);
@@ -172,7 +171,7 @@ namespace weightmod.src
                 }
 
             });
-            capi.Event.PlayerJoin += OnPlayerNowPlayingClient;
+            //capi.Event.PlayerJoin += OnPlayerNowPlayingClient;
         }
         public override void StartServerSide(ICoreServerAPI api)
         {                           
@@ -180,14 +179,13 @@ namespace weightmod.src
             base.StartServerSide(api);
 
             loadConfig(api);
-            EntityBehaviorWeightable.config = config;
+            EntityBehaviorPlayerWeightable.config = config;
             serverChannel = sapi.Network.RegisterChannel("weightmod");
 
             weightStorage = new WeightStorage(api, config);
             weightOracle = new WeightOracle(api, config);
 
             loadClassBonusesMap();
-            api.Event.PlayerNowPlaying += OnPlayerNowPlaying;
             api.Event.PlayerDisconnect += OnPlayerDisconnect;
             api.Event.ServerRunPhase(EnumServerRunPhase.Shutdown, onServerExit);
             api.Event.ServerRunPhase(EnumServerRunPhase.RunGame, FillDictAndSetWeight);
@@ -195,10 +193,54 @@ namespace weightmod.src
             serverChannel.RegisterMessageType(typeof(syncWeightPacket));          
             api.Event.PlayerNowPlaying += weightStorage.sendNewValues;
             harmonyInstance = new Harmony(harmonyID);
-            harmonyInstance.Patch(typeof(Vintagestory.API.Common.InventoryBase).GetMethod("DidModifyItemSlot"), postfix: new HarmonyMethod(typeof(harmPatch).GetMethod("Prefix_OnItemSlotModified"))); 
-            EntityBehaviorWeightable.weightStorage = weightStorage;
-        }
+            harmonyInstance.Patch(typeof(Vintagestory.API.Common.InventoryBase).GetMethod("DidModifyItemSlot"), postfix: new HarmonyMethod(typeof(harmPatch).GetMethod("Prefix_OnItemSlotModified")));
+            //harmonyInstance.Patch(typeof(Vintagestory.GameContent.AttachedContainerWorkspace).GetMethod("TryLoadInv"), postfix: new HarmonyMethod(typeof(harmPatch).GetMethod("Postfix_getOrCreateContainerWorkspace")));
+            harmonyInstance.Patch(typeof(Vintagestory.GameContent.AttachedContainerWorkspace).GetMethod("TryLoadInv"), transpiler: new HarmonyMethod(typeof(harmPatch).GetMethod("Transpiler_TryLoadInv")));
+            //harmonyInstance.Patch(typeof(Vintagestory.GameContent.EntityBehaviorRideable).GetMethod("DidModifyItemSlot"), postfix: new HarmonyMethod(typeof(harmPatch).GetMethod("Prefix_OnItemSlotModified")));
+            EntityBehaviorPlayerWeightable.weightStorage = weightStorage;
+            EntityBehaviorPlayerWeightable.PlayerWeightSettings = new InventoryWeightSettings[0];
+            foreach (var playerWeightSettings in config.INVENTORY_WEIGHT_PLAYER_SETTINGS)
+            {
+                if (!playerWeightSettings.TryGetValue("InvtentoryName", out var name))
+                {
+                    continue;
+                }
+                int startSlot = -1;
+                if (playerWeightSettings.TryGetValue("StartSlot", out var readObject))
+                {
+                    startSlot = Convert.ToInt32(readObject);
+                }
+                int endSlot = -1;
+                if (playerWeightSettings.TryGetValue("EndSlot", out readObject))
+                {
+                    endSlot = Convert.ToInt32(readObject);
+                }
+                bool weightBonus = false;
+                if (playerWeightSettings.TryGetValue("WeightBonus", out readObject))
+                {
+                    weightBonus = (bool)readObject;
+                }
 
+                var newSettings = new InventoryWeightSettings
+                {
+                    InvtentoryName = (string)name,
+                    StartSlot = startSlot,
+                    EndSlot = endSlot,
+                    WeightBonus = weightBonus
+                };
+                EntityBehaviorPlayerWeightable.PlayerWeightSettings = EntityBehaviorPlayerWeightable.PlayerWeightSettings.Append(newSettings).ToArray();
+            }
+
+            api.Event.PlayerJoin += OnPlayerNowPlayingClient;
+        }
+        public void OnPlayerNowPlayingClient(IServerPlayer byPlayer)
+        {
+            var beh = byPlayer.Entity.GetBehavior<EntityBehaviorPlayerWeightable>();
+            if(beh != null && !beh.InventoryHandlingInit)
+            {
+                beh.InitInventoryHandling();
+            }
+        }
 
         private void FillDictAndSetWeight()
         {
@@ -249,6 +291,7 @@ namespace weightmod.src
                 if(config == null)
                 {
                     config = new();
+                    config.AddDefaultValue();
                     api.StoreModConfig<Config>(config, this.Mod.Info.ModID + ".json");
                     return;
                 }
@@ -275,8 +318,8 @@ namespace weightmod.src
             harmonyInstance = null;
             serverChannel = null;
             clientChannel = null;
-            EntityBehaviorWeightable.config = null;
-            EntityBehaviorWeightable.weightStorage = null;
+            EntityBehaviorPlayerWeightable.config = null;
+            EntityBehaviorPlayerWeightable.weightStorage = null;
             weightmod.clientBehaviorInit = false;
         }
         static readonly DateTime start = new DateTime(1970, 1, 1);

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 using Vintagestory.API.Client;
@@ -14,6 +15,7 @@ using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.Common;
 using Vintagestory.GameContent;
+using weightmod.src.eb;
 using weightmod.src.EB;
 
 namespace weightmod.src.harmony
@@ -58,13 +60,56 @@ namespace weightmod.src.harmony
 
             return;
         }
+        public static void Postfix_getOrCreateContainerWorkspace(AttachedContainerWorkspace __instance, ItemSlot bagSlot, int slotIndex, Entity entity)
+        {
+            var ebew = entity.GetBehavior<EntityBehaviorElkWeightable>();
+            if(ebew != null && !ebew.Initialized)                
+            {
+                __instance.WrapperInv.SlotModified += ebew.InnerSlotsModified;
+                ebew.Initialized = true;
+                /*if(__result != null && __result.WrapperInv != null)
+                {
+                    ebew.Initialized = true;
+                    __result.WrapperInv.SlotModified += ebew.InnerSlotsModified;
+                }*/
+            }
+            return;
+        }
+        public static void AddSlotModified(AttachedContainerWorkspace ws)
+        {
+            var ebew = ws.entity.GetBehavior<EntityBehaviorElkWeightable>();
+            if (ebew != null)
+            {
+                ws.WrapperInv.SlotModified += ebew.InnerSlotsModified;
+                ebew.Initialized = true;
+            }
+        }
+        public static IEnumerable<CodeInstruction> Transpiler_TryLoadInv(IEnumerable<CodeInstruction> instructions, ILGenerator il)
+        {
+            bool found = false;
+            bool foundSec = false;
+            var codes = new List<CodeInstruction>(instructions);
+            var proxyMethod = AccessTools.Method(typeof(harmPatch), "AddSlotModified");
+            for (int i = 0; i < codes.Count; i++)
+            {
+
+                if (!found &&
+                        codes[i].opcode == OpCodes.Ldfld && codes[i + 1].opcode == OpCodes.Ldarg_0 && codes[i + 2].opcode == OpCodes.Ldftn && codes[i - 1].opcode == OpCodes.Ldarg_0)
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_0);
+                    yield return new CodeInstruction(OpCodes.Call, proxyMethod);
+                    found = true;
+                }
+                yield return codes[i];
+            }
+        }
         public static bool Prefix_ApplicableInAir(PModuleOnGround __instance, Entity entity, EntityPos pos, EntityControls controls)
         {
             if (!(entity is EntityPlayer))
             {
                 return true;
             }
-            EntityBehaviorWeightable beBeh = entity.GetBehavior<EntityBehaviorWeightable>();
+            EntityBehaviorPlayerWeightable beBeh = entity.GetBehavior<EntityBehaviorPlayerWeightable>();
             if (beBeh != null)
             {
                 //EntityBehaviorControlledPhysics
@@ -81,7 +126,7 @@ namespace weightmod.src.harmony
             {
                 return true;
             }
-            EntityBehaviorWeightable beBeh = entity.GetBehavior<EntityBehaviorWeightable>();
+            EntityBehaviorPlayerWeightable beBeh = entity.GetBehavior<EntityBehaviorPlayerWeightable>();
             if (beBeh != null)
             {
                 //EntityBehaviorControlledPhysics
@@ -101,7 +146,7 @@ namespace weightmod.src.harmony
             {
                 return true;
             }
-            EntityBehaviorWeightable beBeh = entity.GetBehavior<EntityBehaviorWeightable>();
+            EntityBehaviorPlayerWeightable beBeh = entity.GetBehavior<EntityBehaviorPlayerWeightable>();
             if (beBeh != null)
             {
                 //EntityBehaviorControlledPhysics
@@ -121,7 +166,7 @@ namespace weightmod.src.harmony
             }
             if (__instance is InventoryBasePlayer)
             {
-                var a = __instance.Api.World.PlayerByUid((__instance as InventoryBasePlayer).Player.PlayerUID).Entity.GetBehavior<EntityBehaviorWeightable>();
+                var a = __instance.Api.World.PlayerByUid((__instance as InventoryBasePlayer).Player.PlayerUID).Entity.GetBehavior<EntityBehaviorPlayerWeightable>();
                 if (a != null)
                 {
                     a.shouldRecalc = true;

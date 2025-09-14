@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Vintagestory.API.Datastructures;
 
 namespace weightmod.src
@@ -12,6 +13,7 @@ namespace weightmod.src
             public string Category { get; set; }
         }
         public float MAX_PLAYER_WEIGHT { get; set; } = 20000;
+        public float MAX_ELK_WEIGHT { get; set; } = 40000;
 
         public float WEIGH_PLAYER_THRESHOLD { get; set; } = 0.7f;
 
@@ -158,5 +160,18 @@ namespace weightmod.src
         public bool USE_WEIGHT_ORACLE = false;
 
         public bool WEIGHT_ORACLE_DONE = false;
+        public void AddDefaultValue()
+        {
+            INVENTORY_WEIGHT_PLAYER_SETTINGS = new List<Dictionary<string, object>>
+        {
+            { new Dictionary<string, object>{ { "InvtentoryName", "backpack" }, { "StartSlot", 4 }, { "WeightBonus", false } } },
+            { new Dictionary<string, object>{ { "InvtentoryName", "backpack" }, { "EndSlot", 3 }, { "WeightBonus", true } } },
+            { new Dictionary < string, object > {  { "InvtentoryName", "hotbar" }, { "WeightBonus", false } } },
+            { new Dictionary < string, object > {  { "InvtentoryName", "character" }, { "WeightBonus", false } } },
+            { new Dictionary < string, object > {  { "InvtentoryName", "character" }, { "WeightBonus", true } } },
+            { new Dictionary < string, object > { { "InvtentoryName", "mouse" }, { "WeightBonus", false } } }
+        };
+        }
+        public List<Dictionary<string, object>> INVENTORY_WEIGHT_PLAYER_SETTINGS;
     }
 }

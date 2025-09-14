@@ -2,9 +2,9 @@
   "type": "code",
   "modid": "weightmod",
   "name": "weightmod",
-  "author": "KenigVovan",
+    "authors": [ "KenigVovan" ],
   "description": "",
-  "version": "0.2.7",
+  "version": "0.3.6",
   "dependencies": {
     "game": ""
   }
