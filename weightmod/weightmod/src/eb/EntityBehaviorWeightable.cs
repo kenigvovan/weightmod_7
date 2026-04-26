@@ -11,6 +11,7 @@ namespace weightmod.src.eb
 {
     public abstract class EntityBehaviorWeightable : EntityBehavior
     {
+        protected const float FLOAT_EPSILON = 0.001f;
         protected float currentCalculatedWeight = 0;
         protected float lastCalculatedWeight = 0;
         protected ITreeAttribute weightTree;
@@ -63,11 +64,6 @@ namespace weightmod.src.eb
         public void MarkDirty()
         {
             entity.WatchedAttributes.MarkPathDirty("weightmod");
-        }
-        public override void GetInfoText(StringBuilder infotext)
-        {
-            base.GetInfoText(infotext);
-            infotext.AppendLine("Weight: 2");
         }
     }
 }

@@ -57,7 +57,6 @@ namespace weightmod.src
             {
                 var pl = weightmod.capi.World.Player;
                 var ep = new EntityBehaviorPlayerWeightable(pl.Entity);
-                //ep.PostInit();
                 weightmod.capi.World.Player.Entity.AddBehavior(ep);
                 weightmod.clientBehaviorInit = true;
             }    
@@ -171,7 +170,6 @@ namespace weightmod.src
                 }
 
             });
-            //capi.Event.PlayerJoin += OnPlayerNowPlayingClient;
         }
         public override void StartServerSide(ICoreServerAPI api)
         {                           
@@ -183,20 +181,17 @@ namespace weightmod.src
             serverChannel = sapi.Network.RegisterChannel("weightmod");
 
             weightStorage = new WeightStorage(api, config);
-            weightOracle = new WeightOracle(api, config);
+            weightOracle = new WeightOracle(api, config, this.Mod.Info.ModID + ".json");
 
             loadClassBonusesMap();
             api.Event.PlayerDisconnect += OnPlayerDisconnect;
-            api.Event.ServerRunPhase(EnumServerRunPhase.Shutdown, onServerExit);
             api.Event.ServerRunPhase(EnumServerRunPhase.RunGame, FillDictAndSetWeight);
             
             serverChannel.RegisterMessageType(typeof(syncWeightPacket));          
             api.Event.PlayerNowPlaying += weightStorage.sendNewValues;
             harmonyInstance = new Harmony(harmonyID);
             harmonyInstance.Patch(typeof(Vintagestory.API.Common.InventoryBase).GetMethod("DidModifyItemSlot"), postfix: new HarmonyMethod(typeof(harmPatch).GetMethod("Prefix_OnItemSlotModified")));
-            //harmonyInstance.Patch(typeof(Vintagestory.GameContent.AttachedContainerWorkspace).GetMethod("TryLoadInv"), postfix: new HarmonyMethod(typeof(harmPatch).GetMethod("Postfix_getOrCreateContainerWorkspace")));
             harmonyInstance.Patch(typeof(Vintagestory.GameContent.AttachedContainerWorkspace).GetMethod("TryLoadInv"), transpiler: new HarmonyMethod(typeof(harmPatch).GetMethod("Transpiler_TryLoadInv")));
-            //harmonyInstance.Patch(typeof(Vintagestory.GameContent.EntityBehaviorRideable).GetMethod("DidModifyItemSlot"), postfix: new HarmonyMethod(typeof(harmPatch).GetMethod("Prefix_OnItemSlotModified")));
             EntityBehaviorPlayerWeightable.weightStorage = weightStorage;
             EntityBehaviorPlayerWeightable.PlayerWeightSettings = new InventoryWeightSettings[0];
             foreach (var playerWeightSettings in config.INVENTORY_WEIGHT_PLAYER_SETTINGS)
@@ -267,10 +262,6 @@ namespace weightmod.src
             }
 
             return Encoding.UTF8.GetString(decompressedBytes);
-        }
-        public void onServerExit()
-        {
-            //classBonuses.Clear();
         }
         public static void loadClassBonusesMap()
         {

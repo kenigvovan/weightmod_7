@@ -115,7 +115,7 @@ namespace weightmod.src.eb
 
             //if health ratio was changed or current and last weight is not the same = send packet and also update
             //treeAttribute with maxweight and currentweight
-            if (lastCalculatedWeight != currentCalculatedWeight)
+            if (Math.Abs(lastCalculatedWeight - currentCalculatedWeight) > FLOAT_EPSILON)
             {
                 treeAttribute.SetFloat("currentweight", currentCalculatedWeight);
                 treeAttribute.SetFloat("maxweight", maxWeight);

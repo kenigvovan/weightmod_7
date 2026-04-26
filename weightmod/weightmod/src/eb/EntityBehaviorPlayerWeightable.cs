@@ -12,6 +12,11 @@ namespace weightmod.src.EB
 {
     public class EntityBehaviorPlayerWeightable : EntityBehaviorWeightable
     {
+        const float WEIGHT_CHANGE_UPDATE_THRESHOLD = 20f;
+        const float PERCENT_MODIFIER_CHANGE_THRESHOLD = 0.09f;
+        const float OVERLOADED_WALKSPEED_PENALTY = -2f;
+        const float SOFT_LOAD_WALKSPEED_PENALTY_FACTOR = -0.2f;
+
         bool changeMade = true;
 
         ITreeAttribute healthTree;
@@ -193,23 +198,24 @@ namespace weightmod.src.EB
             }
 
             //if weight was changed
-            if (!shouldUpdate && currentCalculatedWeight - lastCalculatedWeight > 20)
+            if (!shouldUpdate && currentCalculatedWeight - lastCalculatedWeight > WEIGHT_CHANGE_UPDATE_THRESHOLD)
             {
                 shouldUpdate = true;
             }
             // health ration changed
-            if (!shouldUpdate && lastPercentModifier - treeAttribute.GetFloat("percentmodifier") > 0.09)
+            if (!shouldUpdate && lastPercentModifier - treeAttribute.GetFloat("percentmodifier") > PERCENT_MODIFIER_CHANGE_THRESHOLD)
             {
                 changeMade = true;
                 lastPercentModifier = treeAttribute.GetFloat("percentmodifier");
             }
-            if (!shouldUpdate && lastWeightBonus != entity.Stats.GetBlended("weightmodweightbonus"))
+            float blendedBonus = entity.Stats.GetBlended("weightmodweightbonus");
+            if (!shouldUpdate && Math.Abs(lastWeightBonus - blendedBonus) > FLOAT_EPSILON)
             {
                 changeMade = true;
-                lastWeightBonus = entity.Stats.GetBlended("weightmodweightbonus");
+                lastWeightBonus = blendedBonus;
             }
 
-            if (!shouldUpdate && lastWeightBonusBags != currentWeightBonusBags)
+            if (!shouldUpdate && Math.Abs(lastWeightBonusBags - currentWeightBonusBags) > FLOAT_EPSILON)
             {
                 changeMade = true;
                 lastWeightBonusBags = currentWeightBonusBags;
@@ -231,7 +237,7 @@ namespace weightmod.src.EB
             if (currentCalculatedWeight > maxWeight)
             {
                 //Processed in harmPatch (Prefix_DoApplyOnGround/Prefix_DoApplyInLiquid) using isOverloaded
-                entity.Stats.Set("walkspeed", "weightmod", -2, true);
+                entity.Stats.Set("walkspeed", "weightmod", OVERLOADED_WALKSPEED_PENALTY, true);
                 if ((entity as EntityAgent).MountedOn != null)
                 {
                     (entity as EntityAgent).TryUnmount();
@@ -241,7 +247,7 @@ namespace weightmod.src.EB
             //slower movespeed
             else if (currentCalculatedWeight > maxWeight * config.WEIGH_PLAYER_THRESHOLD)
             {
-                entity.Stats.Set("walkspeed", "weightmod", (float)(-0.2 * (currentCalculatedWeight / maxWeight)), true);
+                entity.Stats.Set("walkspeed", "weightmod", SOFT_LOAD_WALKSPEED_PENALTY_FACTOR * (currentCalculatedWeight / maxWeight), true);
             }
             else
             {
@@ -251,7 +257,7 @@ namespace weightmod.src.EB
 
             //if health ratio was changed or current and last weight is not the same = send packet and also update
             //treeAttribute with maxweight and currentweight
-            if (changeMade || lastCalculatedWeight != currentCalculatedWeight)
+            if (changeMade || Math.Abs(lastCalculatedWeight - currentCalculatedWeight) > FLOAT_EPSILON)
             {
                 treeAttribute.SetFloat("currentweight", currentCalculatedWeight);
                 treeAttribute.SetFloat("maxweight", maxWeight);
@@ -286,7 +292,7 @@ namespace weightmod.src.EB
                 return;
             }
             float tmpHealthRation = healthTree.GetFloat("currenthealth") / healthTree.GetFloat("maxhealth");
-            if (lastRatioHealth != tmpHealthRation)
+            if (Math.Abs(lastRatioHealth - tmpHealthRation) > FLOAT_EPSILON)
             {
                 shouldRecalc = true;
                 changeMade = true;

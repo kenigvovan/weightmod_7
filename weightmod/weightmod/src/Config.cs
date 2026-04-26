@@ -30,73 +30,7 @@ namespace weightmod.src
         public string INFO_COLOR_WEIGHT { get; set; } = "#F0C20B";
         public string INFO_COLOR_WEIGHT_BONUS { get; set; } = "#1F920E";
 
-        public OrderedDictionary<string, float> WEIGHTS_FOR_ITEMS { get; set; } = new OrderedDictionary<string, float>
-        {
-            { "game:crystalizedore-poor-", 43},
-            { "game:crystalizedore-medium-", 52},
-            { "game:crystalizedore-rich-", 75},
-            { "game:crystalizedore-bountiful-", 91},
-            { "game:-poor-cassiterite-", 13},
-            { "game:-medium-cassiterite-", 26},
-            { "game:-rich-cassiterite-", 43},
-            { "game:-bountiful-cassiterite-", 52},
-
-            { "game:-poor-hematite-", 52},
-            { "game:-medium-hematite-", 75},
-            { "game:-rich-hematite-", 78},
-            { "game:-bountiful-hematite-", 104},
-
-            { "game:-poor-quartz_nativesilver-", 13},
-            { "game:-medium-quartz_nativesilver-", 26},
-            { "game:-rich-quartz_nativesilver-", 43},
-            { "game:-bountiful-quartz_nativesilver-", 52},
-
-            { "game:-poor-quartz_nativegold-", 13},
-            { "game:-medium-quartz_nativegold-", 26},
-            { "game:-rich-quartz_nativegold-", 43},
-            { "game:-bountiful-quartz_nativegold-", 52},
-            { "game:ore-medium", 19.5f},
-            { "game:ore-rich", 32.5f},
-            { "game:ore-bountiful", 52f},
-
-            { "game:metalplate-copper", 178f},
-            { "game:metalplate-brass", 170f},
-            { "game:metalplate-tinbronze", 152f},
-            { "game:metalplate-bismuthbronze", 158f},
-            { "game:metalplate-blackbronze", 180f},
-            { "game:metalplate-iron", 156f},
-            { "game:metalplate-gold", 386f},
-            { "game:metalplate-lead", 226f},
-            { "game:metalplate-tin", 144f},
-            { "game:metalplate-chromium", 142f},
-            { "game:metalplate-platinum", 430f},
-            { "game:metalplate-titanium", 90f},
-            { "game:metalplate-zinc", 140f},
-            { "game:metalplate-silver", 210f},
-            { "game:metalplate-bismuth", 194f},
-            { "game:metalplate-molybdochalkos", 192f},
-
-            { "game:ingot-copper", 89f},
-            { "game:ingot-brass", 85f},
-            { "game:ingot-tinbronze", 76f},
-            { "game:ingot-bismuthbronze", 79f},
-            { "game:ingot-blackbronze", 90f},
-            { "game:ingot-iron", 78f},
-            { "game:ingot-gold", 193f},
-            { "game:ingot-lead", 113f},
-            { "game:ingot-tin", 72f},
-            { "game:ingot-chromium", 71f},
-            { "game:ingot-platinum", 215f},
-            { "game:ingot-titanium", 45f},
-            { "game:ingot-zinc", 70f},
-            { "game:ingot-silver", 105},
-            { "game:ingot-bismuth", 97f},
-            { "game:ingot-molybdochalkos", 98f},
-            { "game:ingot-steel", 78f},
-            { "game:ingot-blistersteel", 78f},
-            { "game:ingot-meteoriciron", 78f}
-
-        };
+        public System.Collections.Generic.OrderedDictionary<string, float> WEIGHTS_FOR_ITEMS { get; set; } = new System.Collections.Generic.OrderedDictionary<string, float>();
 
         public Dictionary<string, float> BASE_WEIGHTS_BY_CATEGORY { get; set; } = new Dictionary<string, float>
         {
@@ -141,16 +75,94 @@ namespace weightmod.src
 
         };
 
-        public Dictionary<string, int> WEIGHTS_FOR_ENDS_WITH { get; set; } = new Dictionary<string, int>
+        public Dictionary<string, int> WEIGHTS_FOR_ENDS_WITH { get; set; } = new Dictionary<string, int>();
+        public Dictionary<string, int> WEIGHTS_BONUS_ITEMS { get; set; } = new Dictionary<string, int>();
+
+        // Unified rule list with wildcard patterns.
+        // pattern:  "game:ingot-copper" (exact), "game:ore-*" (prefix), "*-bountiful" (suffix), "*ore*" (contains)
+        // kind:     "item" | "block" | "bonus"  (bonus writes weightbonusbags on items)
+        // Rules are evaluated in order; first match wins. Processed BEFORE the legacy WEIGHTS_FOR_* dicts.
+        public List<WeightRule> WEIGHT_RULES { get; set; } = new List<WeightRule>
         {
-            { "game:ore-poor", 170}
-        };
-        public Dictionary<string, int> WEIGHTS_BONUS_ITEMS { get; set; } = new Dictionary<string, int>
-        {
-            { "game:basket", 1000},
-            { "game:backpack", 2000},
-            { "game:linensack", 1300},
-            { "game:miningbag", 3300}
+            // Ores (prefix on path after domain)
+            new WeightRule { Pattern = "game:crystalizedore-poor-*",     Weight = 43,    Kind = "item" },
+            new WeightRule { Pattern = "game:crystalizedore-medium-*",   Weight = 52,    Kind = "item" },
+            new WeightRule { Pattern = "game:crystalizedore-rich-*",     Weight = 75,    Kind = "item" },
+            new WeightRule { Pattern = "game:crystalizedore-bountiful-*", Weight = 91,   Kind = "item" },
+
+            // Quartz/cassiterite/hematite ores (substring — variant chunks)
+            new WeightRule { Pattern = "*-poor-cassiterite-*",      Weight = 13,  Kind = "item" },
+            new WeightRule { Pattern = "*-medium-cassiterite-*",    Weight = 26,  Kind = "item" },
+            new WeightRule { Pattern = "*-rich-cassiterite-*",      Weight = 43,  Kind = "item" },
+            new WeightRule { Pattern = "*-bountiful-cassiterite-*", Weight = 52,  Kind = "item" },
+
+            new WeightRule { Pattern = "*-poor-hematite-*",      Weight = 52,  Kind = "item" },
+            new WeightRule { Pattern = "*-medium-hematite-*",    Weight = 75,  Kind = "item" },
+            new WeightRule { Pattern = "*-rich-hematite-*",      Weight = 78,  Kind = "item" },
+            new WeightRule { Pattern = "*-bountiful-hematite-*", Weight = 104, Kind = "item" },
+
+            new WeightRule { Pattern = "*-poor-quartz_nativesilver-*",      Weight = 13, Kind = "item" },
+            new WeightRule { Pattern = "*-medium-quartz_nativesilver-*",    Weight = 26, Kind = "item" },
+            new WeightRule { Pattern = "*-rich-quartz_nativesilver-*",      Weight = 43, Kind = "item" },
+            new WeightRule { Pattern = "*-bountiful-quartz_nativesilver-*", Weight = 52, Kind = "item" },
+
+            new WeightRule { Pattern = "*-poor-quartz_nativegold-*",      Weight = 13, Kind = "item" },
+            new WeightRule { Pattern = "*-medium-quartz_nativegold-*",    Weight = 26, Kind = "item" },
+            new WeightRule { Pattern = "*-rich-quartz_nativegold-*",      Weight = 43, Kind = "item" },
+            new WeightRule { Pattern = "*-bountiful-quartz_nativegold-*", Weight = 52, Kind = "item" },
+
+            // Generic ore tiers (prefix to catch ore-medium-iron etc.)
+            new WeightRule { Pattern = "game:ore-medium*",    Weight = 19.5f, Kind = "item" },
+            new WeightRule { Pattern = "game:ore-rich*",      Weight = 32.5f, Kind = "item" },
+            new WeightRule { Pattern = "game:ore-bountiful*", Weight = 52f,   Kind = "item" },
+
+            // Was WEIGHTS_FOR_ENDS_WITH
+            new WeightRule { Pattern = "*ore-poor", Weight = 170, Kind = "item" },
+
+            // Metal plates (exact)
+            new WeightRule { Pattern = "game:metalplate-copper",         Weight = 178, Kind = "item" },
+            new WeightRule { Pattern = "game:metalplate-brass",          Weight = 170, Kind = "item" },
+            new WeightRule { Pattern = "game:metalplate-tinbronze",      Weight = 152, Kind = "item" },
+            new WeightRule { Pattern = "game:metalplate-bismuthbronze",  Weight = 158, Kind = "item" },
+            new WeightRule { Pattern = "game:metalplate-blackbronze",    Weight = 180, Kind = "item" },
+            new WeightRule { Pattern = "game:metalplate-iron",           Weight = 156, Kind = "item" },
+            new WeightRule { Pattern = "game:metalplate-gold",           Weight = 386, Kind = "item" },
+            new WeightRule { Pattern = "game:metalplate-lead",           Weight = 226, Kind = "item" },
+            new WeightRule { Pattern = "game:metalplate-tin",            Weight = 144, Kind = "item" },
+            new WeightRule { Pattern = "game:metalplate-chromium",       Weight = 142, Kind = "item" },
+            new WeightRule { Pattern = "game:metalplate-platinum",       Weight = 430, Kind = "item" },
+            new WeightRule { Pattern = "game:metalplate-titanium",       Weight = 90,  Kind = "item" },
+            new WeightRule { Pattern = "game:metalplate-zinc",           Weight = 140, Kind = "item" },
+            new WeightRule { Pattern = "game:metalplate-silver",         Weight = 210, Kind = "item" },
+            new WeightRule { Pattern = "game:metalplate-bismuth",        Weight = 194, Kind = "item" },
+            new WeightRule { Pattern = "game:metalplate-molybdochalkos", Weight = 192, Kind = "item" },
+
+            // Ingots (exact)
+            new WeightRule { Pattern = "game:ingot-copper",         Weight = 89,  Kind = "item" },
+            new WeightRule { Pattern = "game:ingot-brass",          Weight = 85,  Kind = "item" },
+            new WeightRule { Pattern = "game:ingot-tinbronze",      Weight = 76,  Kind = "item" },
+            new WeightRule { Pattern = "game:ingot-bismuthbronze",  Weight = 79,  Kind = "item" },
+            new WeightRule { Pattern = "game:ingot-blackbronze",    Weight = 90,  Kind = "item" },
+            new WeightRule { Pattern = "game:ingot-iron",           Weight = 78,  Kind = "item" },
+            new WeightRule { Pattern = "game:ingot-gold",           Weight = 193, Kind = "item" },
+            new WeightRule { Pattern = "game:ingot-lead",           Weight = 113, Kind = "item" },
+            new WeightRule { Pattern = "game:ingot-tin",            Weight = 72,  Kind = "item" },
+            new WeightRule { Pattern = "game:ingot-chromium",       Weight = 71,  Kind = "item" },
+            new WeightRule { Pattern = "game:ingot-platinum",       Weight = 215, Kind = "item" },
+            new WeightRule { Pattern = "game:ingot-titanium",       Weight = 45,  Kind = "item" },
+            new WeightRule { Pattern = "game:ingot-zinc",           Weight = 70,  Kind = "item" },
+            new WeightRule { Pattern = "game:ingot-silver",         Weight = 105, Kind = "item" },
+            new WeightRule { Pattern = "game:ingot-bismuth",        Weight = 97,  Kind = "item" },
+            new WeightRule { Pattern = "game:ingot-molybdochalkos", Weight = 98,  Kind = "item" },
+            new WeightRule { Pattern = "game:ingot-steel",          Weight = 78,  Kind = "item" },
+            new WeightRule { Pattern = "game:ingot-blistersteel",   Weight = 78,  Kind = "item" },
+            new WeightRule { Pattern = "game:ingot-meteoriciron",   Weight = 78,  Kind = "item" },
+
+            // Bonus carry capacity (was WEIGHTS_BONUS_ITEMS)
+            new WeightRule { Pattern = "game:basket",     Weight = 3000,  Kind = "bonus" },
+            new WeightRule { Pattern = "game:backpack",   Weight = 6000,  Kind = "bonus" },
+            new WeightRule { Pattern = "game:linensack",  Weight = 5000,  Kind = "bonus" },
+            new WeightRule { Pattern = "game:miningbag",  Weight = 10000, Kind = "bonus" },
         };
         public string HUD_POSITION { get; set; } = "saturationstatbar";
 

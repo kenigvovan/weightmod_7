@@ -41,7 +41,6 @@ namespace weightmod.src.harmony
                         Lang.Get("weightmod:item_weight", Array.Empty<object>()),
                         "</font>"
                     })).Append(itemstack.ItemAttributes["weightmod"].AsFloat(0f).ToString()).Append("\n");
-                //dsc.Append("<font color=" + Config.Current.INFO_COLOR_WEIGHT.Val + ">" + "<icon name=bear></icon> "  + "</font>").Append(itemstack.ItemAttributes["weightmod"].AsFloat().ToString()).Append("\n");
             }
             else if (itemstack.ItemAttributes != null && itemstack.ItemAttributes["weightbonusbags"].Exists)
             {
@@ -55,7 +54,6 @@ namespace weightmod.src.harmony
                         Lang.Get("weightmod:bonus_weight", Array.Empty<object>()),
                         "</font>"
                     })).Append(itemstack.ItemAttributes["weightbonusbags"].AsFloat(0f).ToString()).Append("\n");
-                //dsc.Append("<font color=" + Config.Current.INFO_COLOR_WEIGHT_BONUS.Val + ">" + "<icon name=basket></icon> " + "</font>").Append(itemstack.ItemAttributes["weightbonusbags"].AsFloat().ToString()).Append("\n");
             }
 
             return;
@@ -67,11 +65,6 @@ namespace weightmod.src.harmony
             {
                 __instance.WrapperInv.SlotModified += ebew.InnerSlotsModified;
                 ebew.Initialized = true;
-                /*if(__result != null && __result.WrapperInv != null)
-                {
-                    ebew.Initialized = true;
-                    __result.WrapperInv.SlotModified += ebew.InnerSlotsModified;
-                }*/
             }
             return;
         }
@@ -103,59 +96,42 @@ namespace weightmod.src.harmony
                 yield return codes[i];
             }
         }
-        public static bool Prefix_ApplicableInAir(PModuleOnGround __instance, Entity entity, EntityPos pos, EntityControls controls)
+        private static bool IsPlayerOverloaded(Entity entity)
         {
             if (!(entity is EntityPlayer))
             {
-                return true;
+                return false;
             }
-            EntityBehaviorPlayerWeightable beBeh = entity.GetBehavior<EntityBehaviorPlayerWeightable>();
+            var beBeh = entity.GetBehavior<EntityBehaviorPlayerWeightable>();
             if (beBeh != null)
             {
-                //EntityBehaviorControlledPhysics
-                if (beBeh.isOverloaded())
-                {
-                    return false;
-                }
+                return beBeh.isOverloaded();
+            }
+            ITreeAttribute weightTree = entity.WatchedAttributes.GetTreeAttribute("weightmod");
+            if (weightTree == null)
+            {
+                return false;
+            }
+            return weightTree.GetFloat("currentweight") > weightTree.GetFloat("maxweight");
+        }
+        public static bool Prefix_ApplicableInAir(Entity entity, EntityPos pos, EntityControls controls)
+        {
+            return !IsPlayerOverloaded(entity);
+        }
+        public static bool Prefix_ApplicableInLiquid(Entity entity, EntityPos pos, EntityControls controls)
+        {
+            if (IsPlayerOverloaded(entity))
+            {
+                entity.Pos.Motion.X = 0;
+                entity.Pos.Motion.Y = 0;
+                entity.Pos.Motion.Z = 0;
+                return false;
             }
             return true;
         }
-        public static bool Prefix_ApplicableInLiquid(PModulePlayerInLiquid __instance, Entity entity, EntityPos pos, EntityControls controls)
+        public static bool Prefix_ApplicableOnGround(Entity entity, EntityPos pos, EntityControls controls)
         {
-            if (!(entity is EntityPlayer))
-            {
-                return true;
-            }
-            EntityBehaviorPlayerWeightable beBeh = entity.GetBehavior<EntityBehaviorPlayerWeightable>();
-            if (beBeh != null)
-            {
-                //EntityBehaviorControlledPhysics
-                if (beBeh.isOverloaded())
-                {
-                    entity.Pos.Motion.X = 0;
-                    entity.Pos.Motion.Y = 0;
-                    entity.Pos.Motion.Z = 0;
-                    return false;
-                }
-            }
-            return true;
-        }
-        public static bool Prefix_ApplicableOnGround(PModulePlayerInAir __instance, Entity entity, EntityPos pos, EntityControls controls)
-        {
-            if (!(entity is EntityPlayer))
-            {
-                return true;
-            }
-            EntityBehaviorPlayerWeightable beBeh = entity.GetBehavior<EntityBehaviorPlayerWeightable>();
-            if (beBeh != null)
-            {
-                //EntityBehaviorControlledPhysics
-                if (beBeh.isOverloaded())
-                {
-                    return false;
-                }
-            }
-            return true;
+            return !IsPlayerOverloaded(entity);
         }
 
         public static void Prefix_OnItemSlotModified(InventoryBase __instance, ItemSlot slot)

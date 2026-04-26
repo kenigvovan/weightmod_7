@@ -34,30 +34,20 @@ namespace weightmod.src
 
         public void ChangeCollectablesWeight()
         {
-            string[] tmp = new string[2];
+            ApplyUnifiedRules();
+
             foreach (var it in api.World.Items)
             {
                 foreach (var it_prepared in config.WEIGHTS_FOR_ITEMS)
                 {
-                    tmp = it_prepared.Key.Split(':');
+                    var tmp = it_prepared.Key.Split(':');
                     if (it.Code != null && it.Code.Domain.Equals(tmp[0]) && it.Code.Path.Contains(tmp[1]))
                     {
-
                         if (itemIdToWeight.ContainsKey(it.Id))
                         {
                             continue;
                         }
-                        if (it.Attributes != null)
-                        {
-                            it.Attributes.Token["weightmod"] = it_prepared.Value;
-                            it.Attributes = new JsonObject(it.Attributes.Token);                           
-                        }
-                        else
-                        {
-                            JToken jt = JToken.Parse("{}");
-                            jt["weightmod"] = it_prepared.Value;
-                            it.Attributes = new JsonObject(jt);
-                        }
+                        SetCollectibleAttribute(it, "weightmod", it_prepared.Value);
                         itemIdToWeight[it.Id] = it_prepared.Value;
                     }
                 }
@@ -66,24 +56,14 @@ namespace weightmod.src
             {
                 foreach (var it_prepared in config.WEIGHTS_FOR_BLOCKS)
                 {
-                    tmp = it_prepared.Key.Split(':');
+                    var tmp = it_prepared.Key.Split(':');
                     if (it.Code != null && it.Code.Domain.Equals(tmp[0]) && it.Code.Path.Contains(tmp[1]))
                     {
                         if (itemIdToWeight.ContainsKey(it.Id))
                         {
                             continue;
                         }
-                        if (it.Attributes != null)
-                        {
-                            it.Attributes.Token["weightmod"] = it_prepared.Value;
-                            it.Attributes = new JsonObject(it.Attributes.Token);
-                        }
-                        else
-                        {
-                            JToken jt = JToken.Parse("{}");
-                            jt["weightmod"] = it_prepared.Value;
-                            it.Attributes = new JsonObject(jt);
-                        }
+                        SetCollectibleAttribute(it, "weightmod", it_prepared.Value);
                         blockIdToWeight[it.Id] = it_prepared.Value;
                     }
                 }
@@ -92,24 +72,14 @@ namespace weightmod.src
             {
                 foreach (var it_prepared in config.WEIGHTS_BONUS_ITEMS)
                 {
-                    tmp = it_prepared.Key.Split(':');
+                    var tmp = it_prepared.Key.Split(':');
                     if (it.Code != null && it.Code.Domain.Equals(tmp[0]) && it.Code.Path.Equals(tmp[1]))
                     {
                         if (itemIdToWeight.ContainsKey(it.Id))
                         {
                             continue;
                         }
-                        if (it.Attributes != null)
-                        {
-                            it.Attributes.Token["weightbonusbags"] = it_prepared.Value;
-                            it.Attributes = new JsonObject(it.Attributes.Token);
-                        }
-                        else
-                        {
-                            JToken jt = JToken.Parse("{}");
-                            jt["weightbonusbags"] = it_prepared.Value;
-                            it.Attributes = new JsonObject(jt);
-                        }
+                        SetCollectibleAttribute(it, "weightbonusbags", it_prepared.Value);
                         itemBonusIdToWeight[it.Id] = it_prepared.Value;
                     }
                 }
@@ -118,24 +88,14 @@ namespace weightmod.src
             {
                 foreach (var it_prepared in config.WEIGHTS_FOR_ENDS_WITH)
                 {
-                    tmp = it_prepared.Key.Split(':');
+                    var tmp = it_prepared.Key.Split(':');
                     if (it.Code != null && it.Code.Domain.Equals(tmp[0]) && it.Code.Path.EndsWith(tmp[1]))
                     {
                         if (itemIdToWeight.ContainsKey(it.Id))
                         {
                             continue;
                         }
-                        if (it.Attributes != null)
-                        {
-                            it.Attributes.Token["weightmod"] = it_prepared.Value;
-                            it.Attributes = new JsonObject(it.Attributes.Token);
-                        }
-                        else
-                        {
-                            JToken jt = JToken.Parse("{}");
-                            jt["weightmod"] = it_prepared.Value;
-                            it.Attributes = new JsonObject(jt);
-                        }
+                        SetCollectibleAttribute(it, "weightmod", it_prepared.Value);
                         itemIdToWeight[it.Id] = it_prepared.Value;
                     }
                 }
@@ -152,15 +112,85 @@ namespace weightmod.src
                 tmpStr = JsonConvert.SerializeObject(itemBonusIdToWeight, Formatting.Indented);
                 bArrIBITW = CompressStr(tmpStr);
 
-                api.Logger.Notification($"Network sync data prepared: Items={itemIdToWeight.Count}, Blocks={blockIdToWeight.Count}, BonusItems={itemBonusIdToWeight.Count}");
+                api.Logger.VerboseDebug($"Network sync data prepared: Items={itemIdToWeight.Count}, Blocks={blockIdToWeight.Count}, BonusItems={itemBonusIdToWeight.Count}");
             }
             catch (Exception ex)
             {
                 api.Logger.Error($"Error preparing network sync: {ex.Message}");
             }
 
-            api.Logger.Notification("Finished filling weight dictionary");
+            api.Logger.VerboseDebug("Finished filling weight dictionary");
         }
+        private void ApplyUnifiedRules()
+        {
+            if (config.WEIGHT_RULES == null || config.WEIGHT_RULES.Count == 0) return;
+
+            var compiled = new List<CompiledRule>(config.WEIGHT_RULES.Count);
+            foreach (var r in config.WEIGHT_RULES)
+            {
+                var c = CompiledRule.TryParse(r);
+                if (c != null) compiled.Add(c);
+            }
+            if (compiled.Count == 0) return;
+
+            foreach (var it in api.World.Items)
+            {
+                if (it?.Code == null) continue;
+                if (itemIdToWeight.ContainsKey(it.Id) || itemBonusIdToWeight.ContainsKey(it.Id)) continue;
+
+                string code = it.Code.ToString();
+                foreach (var c in compiled)
+                {
+                    if (c.Kind == RuleKind.Block) continue;
+                    if (!c.Matches(code)) continue;
+
+                    if (c.Kind == RuleKind.Bonus)
+                    {
+                        SetCollectibleAttribute(it, "weightbonusbags", c.Weight);
+                        itemBonusIdToWeight[it.Id] = c.Weight;
+                    }
+                    else
+                    {
+                        SetCollectibleAttribute(it, "weightmod", c.Weight);
+                        itemIdToWeight[it.Id] = c.Weight;
+                    }
+                    break;
+                }
+            }
+
+            foreach (var it in api.World.Blocks)
+            {
+                if (it?.Code == null) continue;
+                if (blockIdToWeight.ContainsKey(it.Id)) continue;
+
+                string code = it.Code.ToString();
+                foreach (var c in compiled)
+                {
+                    if (c.Kind != RuleKind.Block) continue;
+                    if (!c.Matches(code)) continue;
+
+                    SetCollectibleAttribute(it, "weightmod", c.Weight);
+                    blockIdToWeight[it.Id] = c.Weight;
+                    break;
+                }
+            }
+        }
+
+        private static void SetCollectibleAttribute(CollectibleObject co, string key, float value)
+        {
+            if (co.Attributes != null)
+            {
+                co.Attributes.Token[key] = value;
+                co.Attributes = new JsonObject(co.Attributes.Token);
+            }
+            else
+            {
+                JToken jt = JToken.Parse("{}");
+                jt[key] = value;
+                co.Attributes = new JsonObject(jt);
+            }
+        }
+
         public string CompressStr(string inStr)
         {
             byte[] compressedBytes;

@@ -5,6 +5,7 @@ namespace weightmod.src.gui
 {
     public class HudWeightPlayer : HudElement
     {
+        private const float FLOAT_EPSILON = 0.001f;
         private float lastWeight;
         private float lastMaxWeight;
         GuiElementStatbar weightBar;
@@ -19,31 +20,26 @@ namespace weightmod.src.gui
             ITreeAttribute treeAttribute = capi.World.Player.Entity.WatchedAttributes.GetTreeAttribute("weightmod");
             if (treeAttribute == null)
                 return;
-            float? nullable1 = treeAttribute.TryGetFloat("currentweight");
-            float? nullable2 = treeAttribute.TryGetFloat("maxweight");
-            if (!nullable1.HasValue || !nullable2.HasValue)
+
+            float? currentWeight = treeAttribute.TryGetFloat("currentweight");
+            float? maxWeight = treeAttribute.TryGetFloat("maxweight");
+            if (!currentWeight.HasValue || !maxWeight.HasValue)
                 return;
-            double lastWeight = this.lastWeight;
-            float? nullable3 = nullable1;
-            double valueOrDefault1 = (double)nullable3.GetValueOrDefault();
-            if (lastWeight == valueOrDefault1 & nullable3.HasValue)
-            {
-                double lastMaxHealth = lastMaxWeight;
-                float? nullable4 = nullable2;
-                double valueOrDefault2 = (double)nullable4.GetValueOrDefault();
-                if (lastMaxHealth == valueOrDefault2 & nullable4.HasValue)
-                    return;
-            }
+
+            float weightVal = currentWeight.Value;
+            float maxWeightVal = maxWeight.Value;
+            if (System.Math.Abs(lastWeight - weightVal) < FLOAT_EPSILON && System.Math.Abs(lastMaxWeight - maxWeightVal) < FLOAT_EPSILON)
+                return;
+
             if (weightBar == null)
             {
                 ComposeGuis();
                 return;
             }
             weightBar.SetLineInterval(1f);
-            weightBar.SetValues(nullable1.Value, 0.0f, nullable2.Value);
-            this.lastWeight = nullable1.Value;
-            lastMaxWeight = nullable2.Value;
-            //ComposeGuis();
+            weightBar.SetValues(weightVal, 0.0f, maxWeightVal);
+            lastWeight = weightVal;
+            lastMaxWeight = maxWeightVal;
         }
         public override void OnOwnPlayerDataReceived()
         {

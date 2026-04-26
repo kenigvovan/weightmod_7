@@ -18,11 +18,13 @@ namespace weightmod.src
         private ICoreAPI api;
         private ItemCategorizer itemCategorizer;
         Config config;
-        public WeightOracle(ICoreAPI api, Config config)
+        private readonly string configFileName;
+        public WeightOracle(ICoreAPI api, Config config, string configFileName)
         {
             this.api = api;
             itemCategorizer = new(api, config);
             this.config = config;
+            this.configFileName = configFileName;
         }
         public void FillConfigDicts()
         {
@@ -49,7 +51,7 @@ namespace weightmod.src
             }
 
             api.Logger.VerboseDebug($"Processed {blockCount} blocks");
-            api.StoreModConfig<Config>(weightmod.config, "weightmod.json");
+            api.StoreModConfig<Config>(weightmod.config, configFileName);
             weightmod.config.WEIGHT_ORACLE_DONE = true;
 
         }

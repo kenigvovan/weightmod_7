@@ -5,57 +5,64 @@
         "path": "/server/behaviors/-",
         "value": { "code": "affectedByItemsWeight" }
     },
-    //"game:entities/animal/mammal/hooved/elk-tamed.json",
     {
-        "file": "game:entities/land/hooved/elk-tamed.json",
+        "file": "game:entities/animal/mammal/hooved/elk-tamed.json",
         "reason": "add",
         "path": "/server/behaviors/-",
         "value": { "code": "affectedByItemsWeightElk" }
     },
     {
         "file": "cartwrightscaravan:entities/land/marketstall.json",
+        "dependsOn": [{ "modid": "cartwrightscaravan" }],
         "reason": "add",
         "path": "/server/behaviors/-",
         "value": { "code": "affectedByItemsWeightElk" }
     },
     {
         "file": "cartwrightscaravan:entities/land/marketstall.json",
+        "dependsOn": [{ "modid": "cartwrightscaravan" }],
         "reason": "add",
         "path": "/client/behaviors/-",
         "value": { "code": "showweightinfo" }
     },
     {
         "file": "cartwrightscaravan:entities/land/sled.json",
+        "dependsOn": [{ "modid": "cartwrightscaravan" }],
         "reason": "add",
         "path": "/server/behaviors/-",
         "value": { "code": "affectedByItemsWeightElk" }
     },
     {
         "file": "cartwrightscaravan:entities/land/sled.json",
+        "dependsOn": [{ "modid": "cartwrightscaravan" }],
         "reason": "add",
         "path": "/client/behaviors/-",
         "value": { "code": "showweightinfo" }
     },
     {
         "file": "cartwrightscaravan:entities/land/cart.json",
+        "dependsOn": [{ "modid": "cartwrightscaravan" }],
         "reason": "add",
         "path": "/server/behaviors/-",
         "value": { "code": "affectedByItemsWeightElk" }
     },
     {
         "file": "cartwrightscaravan:entities/land/cart.json",
+        "dependsOn": [{ "modid": "cartwrightscaravan" }],
         "reason": "add",
         "path": "/client/behaviors/-",
         "value": { "code": "showweightinfo" }
     },
     {
         "file": "feverstonehorses:entities/land/horse.json",
+        "dependsOn": [{ "modid": "feverstonehorses" }],
         "reason": "add",
         "path": "/server/behaviors/-",
         "value": { "code": "affectedByItemsWeightElk" }
     },
     {
         "file": "feverstonehorses:entities/land/horse.json",
+        "dependsOn": [{ "modid": "feverstonehorses" }],
         "reason": "add",
         "path": "/client/behaviors/-",
         "value": { "code": "showweightinfo" }
@@ -244,12 +251,6 @@
     //Stones
     {
         "file": "game:itemtypes/resource/stone.json",
-        "reason": "replace",
-        "path": "/attributesByType/*/weightmodByType",
-        "value": { "*": 4 }
-    },
-    {
-        "file": "game:itemtypes/resource/stone.json",
         "reason": "add",
         "path": "/attributesByType/stone-chert/weightmod",
         "value": 4
@@ -326,7 +327,7 @@
     },
     //Armor
     {
-        "file": "game:itemtypes/wearable/armor.json",
+        "file": "game:itemtypes/wearable/seraph/armor.json",
         "reason": "add",
         "path": "/attributes/weightmodByType",
         "value": {
@@ -476,25 +477,6 @@
             "knife-bone-peridotite": 30,
             "knife-bone-flint": 30,
             "knife-bone-obsidian": 30
-        }
-    },
-    {
-        "file": "game:itemtypes/tool/longblade.json",
-        "reason": "add",
-        "path": "/attributes/weightmodByType",
-        "value": {
-            "*-copper": 94,
-            "*-gold": 200,
-            "*-silver": 88,
-            "*-bismuthbronze": 45,
-            "*-tinbronze": 34,
-            "*-blackbronze": 35,
-            "*-iron": 46,
-            "*-meteoriciron": 42,
-            "*-steel": 54,
-            "*-blackguard": 54,
-            "*-forlorn": 54,
-            "*-scrap": 65
         }
     },
     {
@@ -719,35 +701,7 @@
             }
         }
     },
-    //containers
-    {
-        "file": "game:itemtypes/bag/basket.json",
-        "reason": "add",
-        "path": "/attributes/weightbonusbags",
-        "value": 3000
-
-    },
-    {
-        "file": "game:itemtypes/bag/backpack.json",
-        "reason": "add",
-        "path": "/attributes/weightbonusbags",
-        "value": 6000
-
-    },
-    {
-        "file": "game:itemtypes/bag/linensack.json",
-        "reason": "add",
-        "path": "/attributes/weightbonusbags",
-        "value": 5000
-
-    },
-    {
-        "file": "game:itemtypes/bag/miningbag.json",
-        "reason": "add",
-        "path": "/attributes/weightbonusbags",
-        "value": 10000
-
-    },
+    //containers — moved to WEIGHT_RULES (Config.cs)
     {
         "file": "game:blocktypes/metal/anvil.json",
         "reason": "add",
@@ -808,19 +762,9 @@
 
         }
     },
-    //wearable
-    {
-        "file": "game:itemtypes/wearable/waist.json",
-        "reason": "add",
-        "path": "/attributes/weightbonusbagsByType",
-        "value": {
-            "*heavy-tool-belt": 1000
-
-        }
-
-    },
     //xmelee
     {
+        "dependsOn": [{ "modid": "xmelee" }],
         "file": "xmelee:itemtypes/weapon/mace.json",
         "reason": "add",
         "path": "/attributes/weightmodByType",
@@ -832,6 +776,7 @@
         }
     },
     {
+        "dependsOn": [{ "modid": "xmelee" }],
         "file": "xmelee:itemtypes/weapon/messer.json",
         "reason": "add",
         "path": "/attributes/weightmodByType",
@@ -843,6 +788,7 @@
         }
     },
     {
+        "dependsOn": [{ "modid": "xmelee" }],
         "file": "xmelee:itemtypes/weapon/halberd.json",
         "reason": "add",
         "path": "/attributes/weightmodByType",
@@ -854,6 +800,7 @@
         }
     },
     {
+        "dependsOn": [{ "modid": "xmelee" }],
         "file": "xmelee:itemtypes/weapon/pike.json",
         "reason": "add",
         "path": "/attributes/weightmodByType",
@@ -865,6 +812,7 @@
         }
     },
     {
+        "dependsOn": [{ "modid": "xmelee" }],
         "file": "xmelee:itemtypes/weapon/rapier.json",
         "reason": "add",
         "path": "/attributes/weightmodByType",
@@ -876,6 +824,7 @@
         }
     },
     {
+        "dependsOn": [{ "modid": "xmelee" }],
         "file": "xmelee:itemtypes/weapon/spear.json",
         "reason": "add",
         "path": "/attributes/weightmodByType",
@@ -887,6 +836,7 @@
         }
     },
     {
+        "dependsOn": [{ "modid": "xmelee" }],
         "file": "xmelee:itemtypes/weapon/zweihander.json",
         "reason": "add",
         "path": "/attributes/weightmodByType",
@@ -898,6 +848,7 @@
         }
     },
     {
+        "dependsOn": [{ "modid": "xmelee" }],
         "file": "xmelee:itemtypes/weapon/longsword.json",
         "reason": "add",
         "path": "/attributes/weightmodByType",
@@ -909,6 +860,7 @@
         }
     },
     {
+        "dependsOn": [{ "modid": "xmelee" }],
         "file": "xmelee:itemtypes/component/weapon_grip.json",
         "reason": "add",
         "path": "/attributes",
@@ -921,6 +873,7 @@
         }
     },
     {
+        "dependsOn": [{ "modid": "xmelee" }],
         "file": "xmelee:itemtypes/component/halberd_head.json",
         "reason": "add",
         "path": "/attributes",
@@ -933,6 +886,7 @@
         }
     },
     {
+        "dependsOn": [{ "modid": "xmelee" }],
         "file": "xmelee:itemtypes/component/longsword_head.json",
         "reason": "add",
         "path": "/attributes",
@@ -945,6 +899,7 @@
         }
     },
     {
+        "dependsOn": [{ "modid": "xmelee" }],
         "file": "xmelee:itemtypes/component/mace_head.json",
         "reason": "add",
         "path": "/attributes",
@@ -957,6 +912,7 @@
         }
     },
     {
+        "dependsOn": [{ "modid": "xmelee" }],
         "file": "xmelee:itemtypes/component/messer_head.json",
         "reason": "add",
         "path": "/attributes",
@@ -969,6 +925,7 @@
         }
     },
     {
+        "dependsOn": [{ "modid": "xmelee" }],
         "file": "xmelee:itemtypes/component/rapier_head.json",
         "reason": "add",
         "path": "/attributes",
@@ -981,6 +938,7 @@
         }
     },
     {
+        "dependsOn": [{ "modid": "xmelee" }],
         "file": "xmelee:itemtypes/component/spear_head.json",
         "reason": "add",
         "path": "/attributes",
@@ -993,6 +951,7 @@
         }
     },
     {
+        "dependsOn": [{ "modid": "xmelee" }],
         "file": "xmelee:itemtypes/component/spear_shaft.json",
         "reason": "add",
         "path": "/attributes",
@@ -1001,6 +960,7 @@
         }
     },
     {
+        "dependsOn": [{ "modid": "xmelee" }],
         "file": "xmelee:itemtypes/component/zweihander_head.json",
         "reason": "add",
         "path": "/attributes",
