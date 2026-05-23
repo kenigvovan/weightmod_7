@@ -1,15 +1,5 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.IO.Compression;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Vintagestory.API.Common;
-using Vintagestory.API.Datastructures;
-using Vintagestory.API.Server;
 
 namespace weightmod.src
 {
@@ -19,6 +9,7 @@ namespace weightmod.src
         private ItemCategorizer itemCategorizer;
         Config config;
         private readonly string configFileName;
+        private List<CompiledRule> bonusRules;
         public WeightOracle(ICoreAPI api, Config config, string configFileName)
         {
             this.api = api;
@@ -30,6 +21,16 @@ namespace weightmod.src
         {
             int itemCount = 0;
             int blockCount = 0;
+
+            bonusRules = new List<CompiledRule>();
+            if (config.WEIGHT_RULES != null)
+            {
+                foreach (var r in config.WEIGHT_RULES)
+                {
+                    var c = CompiledRule.TryParse(r);
+                    if (c != null && c.Kind == RuleKind.Bonus) bonusRules.Add(c);
+                }
+            }
 
             foreach (var item in api.World.Items)
             {
@@ -51,15 +52,34 @@ namespace weightmod.src
             }
 
             api.Logger.VerboseDebug($"Processed {blockCount} blocks");
-            api.StoreModConfig<Config>(weightmod.config, configFileName);
-            weightmod.config.WEIGHT_ORACLE_DONE = true;
 
+            WeightCompactor.Compact(config, api);
+
+            weightmod.config.WEIGHT_ORACLE_DONE = true;
+            api.StoreModConfig<Config>(weightmod.config, configFileName);         
         }
         private void ProcessCollectibleWeight(CollectibleObject collectibleObject, bool forItem)
         {
             if (collectibleObject?.Code == null) return;
 
             string collectibleCode = collectibleObject.Code.ToString();
+
+            if (config.ORACLE_CODE_BLACKLIST != null)
+            {
+                for (int i = 0; i < config.ORACLE_CODE_BLACKLIST.Count; i++)
+                {
+                    var needle = config.ORACLE_CODE_BLACKLIST[i];
+                    if (!string.IsNullOrEmpty(needle) && collectibleCode.Contains(needle)) return;
+                }
+            }
+
+            if (forItem && bonusRules != null)
+            {
+                foreach (var br in bonusRules)
+                {
+                    if (br.Matches(collectibleCode)) return;
+                }
+            }
 
 
             if ((forItem && !config.WEIGHTS_FOR_ITEMS.ContainsKey(collectibleCode)) ||

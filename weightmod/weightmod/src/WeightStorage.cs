@@ -38,6 +38,7 @@ namespace weightmod.src
 
             foreach (var it in api.World.Items)
             {
+                if (itemBonusIdToWeight.ContainsKey(it.Id)) continue;
                 foreach (var it_prepared in config.WEIGHTS_FOR_ITEMS)
                 {
                     var tmp = it_prepared.Key.Split(':');
@@ -86,6 +87,7 @@ namespace weightmod.src
             }
             foreach (var it in api.World.Items)
             {
+                if (itemBonusIdToWeight.ContainsKey(it.Id)) continue;
                 foreach (var it_prepared in config.WEIGHTS_FOR_ENDS_WITH)
                 {
                     var tmp = it_prepared.Key.Split(':');

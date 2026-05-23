@@ -68,6 +68,11 @@ namespace weightmod.src.EB
                     invObject.SlotModified += OnSlotModified;
                     this.InventoryHandlingInit = true;
                 }
+
+                if (this.InventoryHandlingInit && weightTree != null)
+                {
+                    updateWeight();
+                }
             }
         }
 
@@ -203,19 +208,19 @@ namespace weightmod.src.EB
                 shouldUpdate = true;
             }
             // health ration changed
-            if (!shouldUpdate && lastPercentModifier - treeAttribute.GetFloat("percentmodifier") > PERCENT_MODIFIER_CHANGE_THRESHOLD)
+            if (lastPercentModifier - treeAttribute.GetFloat("percentmodifier") > PERCENT_MODIFIER_CHANGE_THRESHOLD)
             {
                 changeMade = true;
                 lastPercentModifier = treeAttribute.GetFloat("percentmodifier");
             }
             float blendedBonus = entity.Stats.GetBlended("weightmodweightbonus");
-            if (!shouldUpdate && Math.Abs(lastWeightBonus - blendedBonus) > FLOAT_EPSILON)
+            if (Math.Abs(lastWeightBonus - blendedBonus) > FLOAT_EPSILON)
             {
                 changeMade = true;
                 lastWeightBonus = blendedBonus;
             }
 
-            if (!shouldUpdate && Math.Abs(lastWeightBonusBags - currentWeightBonusBags) > FLOAT_EPSILON)
+            if (Math.Abs(lastWeightBonusBags - currentWeightBonusBags) > FLOAT_EPSILON)
             {
                 changeMade = true;
                 lastWeightBonusBags = currentWeightBonusBags;

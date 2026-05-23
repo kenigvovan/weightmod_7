@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using Vintagestory.API.Datastructures;
 
 namespace weightmod.src
@@ -32,6 +33,7 @@ namespace weightmod.src
 
         public System.Collections.Generic.OrderedDictionary<string, float> WEIGHTS_FOR_ITEMS { get; set; } = new System.Collections.Generic.OrderedDictionary<string, float>();
 
+        [JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
         public Dictionary<string, float> BASE_WEIGHTS_BY_CATEGORY { get; set; } = new Dictionary<string, float>
         {
             {"tool", 500f},
@@ -51,6 +53,7 @@ namespace weightmod.src
             {"clothing", 300f},
             {"misc", 200f}
         };
+        [JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
         public Dictionary<string, float> MATERIAL_MULTIPLIERS { get; set; } = new Dictionary<string, float>
         {
             {"wood", 0.8f},
@@ -82,6 +85,7 @@ namespace weightmod.src
         // pattern:  "game:ingot-copper" (exact), "game:ore-*" (prefix), "*-bountiful" (suffix), "*ore*" (contains)
         // kind:     "item" | "block" | "bonus"  (bonus writes weightbonusbags on items)
         // Rules are evaluated in order; first match wins. Processed BEFORE the legacy WEIGHTS_FOR_* dicts.
+        [JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
         public List<WeightRule> WEIGHT_RULES { get; set; } = new List<WeightRule>
         {
             // Ores (prefix on path after domain)
@@ -159,11 +163,106 @@ namespace weightmod.src
             new WeightRule { Pattern = "game:ingot-meteoriciron",   Weight = 78,  Kind = "item" },
 
             // Bonus carry capacity (was WEIGHTS_BONUS_ITEMS)
-            new WeightRule { Pattern = "game:basket",     Weight = 3000,  Kind = "bonus" },
-            new WeightRule { Pattern = "game:backpack",   Weight = 6000,  Kind = "bonus" },
-            new WeightRule { Pattern = "game:linensack",  Weight = 5000,  Kind = "bonus" },
-            new WeightRule { Pattern = "game:miningbag",  Weight = 10000, Kind = "bonus" },
+            new WeightRule { Pattern = "game:basket*",     Weight = 3000,  Kind = "bonus" },
+            new WeightRule { Pattern = "game:backpack*",   Weight = 6000,  Kind = "bonus" },
+            new WeightRule { Pattern = "game:linensack*",  Weight = 5000,  Kind = "bonus" },
+            new WeightRule { Pattern = "game:miningbag*",  Weight = 10000, Kind = "bonus" },
         };
+        // "Known" segment vocabularies for WeightCompactor.
+        // Named groups are for editing convenience; the compactor only uses their union.
+        // A collapsed pattern places '*' only at a position whose value appears in one
+        // of these lists — this guards against false groups formed by accidental suffix matches.
+        [JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
+        public Dictionary<string, List<string>> COMPACTOR_VOCABULARIES { get; set; } = new Dictionary<string, List<string>>
+        {
+            ["woods"] = new List<string>
+            {
+                "oak","pine","walnut","larch","maple","birch","acacia","kapok",
+                "baldcypress","redwood","purpleheart","ebony","aged"
+            },
+            ["rocks"] = new List<string>
+            {
+                "granite","andesite","basalt","chalk","chert","claystone","conglomerate",
+                "limestone","sandstone","shale","peridotite","phyllite","slate",
+                "kimberlite","bauxite","suevite","whitemarble","redmarble","greenmarble",
+                "mixed","flint","obsidian"
+            },
+            ["clays"] = new List<string>
+            {
+                "blackclay","brownclay","creamclay","fireclay","grayclay",
+                "orangeclay","redclay","tanclay"
+            },
+            ["thatch"] = new List<string>
+            {
+                "thatch","agedthatch","sod","bamboo"
+            },
+            ["metals"] = new List<string>
+            {
+                "copper","brass","tinbronze","bismuthbronze","blackbronze","iron","gold",
+                "lead","tin","chromium","platinum","titanium","zinc","silver","bismuth",
+                "molybdochalkos","steel","blistersteel","meteoriciron","nickel",
+                "redsteel","bluesteel","rosegold",
+                "cupronickel","electrum","leadsolder","silversolder","stainlesssteel","uranium"
+            },
+            ["armorparts"] = new List<string>
+            {
+                "head","body","legs"
+            },
+            ["armortypes"] = new List<string>
+            {
+                "chain","scale","plate","brigandine"
+            },
+            ["colors"] = new List<string>
+            {
+                "brickred","cherryred","darkbeige","darkgray","darkgreen","darkolive",
+                "gray","olive","orange","orangebrown","purple","purpleorange","teal",
+                "brown","rust","green","blue","red","yellow","white","black","pink"
+            },
+            ["bookconditions"] = new List<string>
+            {
+                "normal","aged","rotten"
+            },
+            ["dirs"] = new List<string>
+            {
+                "north","south","east","west","ne","nw","se","sw","nesw","up","down"
+            },
+            ["snowfree"] = new List<string>
+            {
+                "free","snow","empty"
+            },
+            ["mushrooms"] = new List<string>
+            {
+                "chanterelle","flyagaric","reishi","violetwebcap","commonmorel","shiitake",
+                "pinkoyster","kingbolete","earthball","dryadsaddle","greencrackedrussula",
+                "almondmushroom","bitterbolete","paddystraw","chickenofthewoods","pinkbonnet",
+                "tinderhoof","whiteoyster","funeralbell","deerear","livermushroom",
+                "fieldmushroom","deathcap","devilstooth","devilbolete"
+            },
+        };
+
+        [JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
+        public List<string> ORACLE_CODE_BLACKLIST { get; set; } = new List<string>
+        {
+            "butterfly",
+            "mob-",
+            "creature-",
+            "antler-",
+            "fishraw-",
+            "fish-",
+            "ontree-",
+            "wildcrafttree:leaves-",
+            "pickledvegetable-",
+            "ciderportion-",
+            "dye-",
+            "juiceportion-",
+            "potionportion-",
+            "spiritportion-",
+            "stackrandomizer-",
+            "taxidermy-",
+            "tusk-pig",
+            "hoovedwearables-",
+        };
+
         public string HUD_POSITION { get; set; } = "saturationstatbar";
 
         public float WEIGHT_HUD_Y = 0;

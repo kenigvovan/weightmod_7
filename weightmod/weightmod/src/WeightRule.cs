@@ -1,4 +1,4 @@
-using System;
+using Vintagestory.API.Util;
 
 namespace weightmod.src
 {
@@ -9,30 +9,18 @@ namespace weightmod.src
         public string Kind { get; set; } = "item";
     }
 
-    internal enum MatchKind { Exact, Prefix, Suffix, Contains }
     internal enum RuleKind { Item, Block, Bonus }
 
     internal class CompiledRule
     {
-        public string Literal;
-        public MatchKind MatchKind;
+        public string Pattern;
+        public bool HasWildcard;
         public float Weight;
         public RuleKind Kind;
 
         public static CompiledRule TryParse(WeightRule r)
         {
             if (r == null || string.IsNullOrEmpty(r.Pattern)) return null;
-
-            string p = r.Pattern;
-            bool starStart = p.StartsWith("*");
-            bool starEnd = p.EndsWith("*");
-            string literal = p.Trim('*');
-
-            MatchKind mk;
-            if (starStart && starEnd) mk = MatchKind.Contains;
-            else if (starStart)       mk = MatchKind.Suffix;
-            else if (starEnd)         mk = MatchKind.Prefix;
-            else                      mk = MatchKind.Exact;
 
             RuleKind rk = (r.Kind?.ToLowerInvariant()) switch
             {
@@ -41,16 +29,19 @@ namespace weightmod.src
                 _ => RuleKind.Item,
             };
 
-            return new CompiledRule { Literal = literal, MatchKind = mk, Weight = r.Weight, Kind = rk };
+            return new CompiledRule
+            {
+                Pattern = r.Pattern,
+                HasWildcard = r.Pattern.IndexOf('*') >= 0 || r.Pattern.Length > 0 && r.Pattern[0] == '@',
+                Weight = r.Weight,
+                Kind = rk,
+            };
         }
 
-        public bool Matches(string fullCode) => MatchKind switch
+        public bool Matches(string fullCode)
         {
-            MatchKind.Exact    => fullCode.Equals(Literal, StringComparison.Ordinal),
-            MatchKind.Prefix   => fullCode.StartsWith(Literal, StringComparison.Ordinal),
-            MatchKind.Suffix   => fullCode.EndsWith(Literal, StringComparison.Ordinal),
-            MatchKind.Contains => fullCode.Contains(Literal),
-            _ => false,
-        };
+            if (!HasWildcard) return fullCode.Equals(Pattern, System.StringComparison.Ordinal);
+            return WildcardUtil.Match(Pattern, fullCode);
+        }
     }
 }

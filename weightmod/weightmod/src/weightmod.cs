@@ -292,8 +292,22 @@ namespace weightmod.src
                 config = new Config();
             }
 
+            DedupeRules(config);
             api.StoreModConfig<Config>(config, this.Mod.Info.ModID + ".json");
             return;
+        }
+        private static void DedupeRules(Config config)
+        {
+            if (config?.WEIGHT_RULES == null || config.WEIGHT_RULES.Count == 0) return;
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+            var deduped = new List<WeightRule>(config.WEIGHT_RULES.Count);
+            foreach (var r in config.WEIGHT_RULES)
+            {
+                if (r == null || string.IsNullOrEmpty(r.Pattern)) continue;
+                var key = (r.Kind ?? "item").ToLowerInvariant() + "|" + r.Pattern;
+                if (seen.Add(key)) deduped.Add(r);
+            }
+            config.WEIGHT_RULES = deduped;
         }
         public override void Dispose()
         {
