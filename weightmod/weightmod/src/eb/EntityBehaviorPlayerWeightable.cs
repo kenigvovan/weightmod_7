@@ -20,7 +20,7 @@ namespace weightmod.src.EB
         bool changeMade = true;
 
         ITreeAttribute healthTree;
-        float lastRatioHealth;
+        float lastRatioHealth = 1;
         float lastWeightBonusBags = 0;
         float currentWeightBonusBags = 0;
         float classBonus = 0;
@@ -79,7 +79,14 @@ namespace weightmod.src.EB
         public override void AfterInitialized(bool onFirstSpawn)
         {
             base.AfterInitialized(onFirstSpawn);
-           
+
+            // Client-side this behavior is added manually via CheckNullAndInit; the
+            // tree-init below (setters on maxWeight/lastPercentModifier/weight/...)
+            // would overwrite the synced server values in the local tree and the
+            // HUD listener would observe those bogus writes (20k stomping the
+            // legit 32k). All this state is server-only — bail out on client.
+            if (entity.World.Side != EnumAppSide.Server) return;
+
             healthTree = entity.WatchedAttributes.GetTreeAttribute("health");
             string playerClass = entity.WatchedAttributes.GetString("characterClass");
             if (playerClass == null || !weightmod.getclassBonuses().TryGetValue(playerClass, out classBonus))
@@ -96,8 +103,6 @@ namespace weightmod.src.EB
                 weight = 0;
                 maxWeight = config.MAX_PLAYER_WEIGHT;
                 lastPercentModifier = 1;
-                lastWeightBonusBags = 0;
-                lastWeightBonus = 0;
 
                 MarkDirty();
                 return;
@@ -114,12 +119,13 @@ namespace weightmod.src.EB
                 lastRatioHealth = healthTree.GetFloat("currenthealth") / healthTree.GetFloat("maxhealth");
             }
             lastPercentModifier = weightTree.GetFloat("percentmodifier");
-            weight = weightTree.GetFloat("currentweight");
-            maxWeight = config.MAX_PLAYER_WEIGHT;
-            lastWeightBonusBags = 0;
+            // Don't touch maxweight/currentweight here: InitInventoryHandling above
+            // may have already called updateWeight() and written the correct values;
+            // this block used to clobber them with MAX_PLAYER_WEIGHT/saved-current
+            // and the HUD stayed broken until the next full recompute (which never
+            // happens without events, since mirror last*-fields are already in sync
+            // with current* values).
             lastWeightBonus = weightTree.GetFloat("weightbonus");
-
-            MarkDirty();
         }
 
         public EntityBehaviorPlayerWeightable(Entity entity) : base(entity)

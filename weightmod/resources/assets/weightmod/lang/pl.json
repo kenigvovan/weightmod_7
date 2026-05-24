@@ -1,4 +1,5 @@
-﻿{
+{
   "item_weight": "Waga Przedmiotu: ",
-  "bonus_weight": "Waga Bonusowa: "
+  "bonus_weight": "Waga Bonusowa: ",
+  "item_weight_stack": " ({0})"
 }

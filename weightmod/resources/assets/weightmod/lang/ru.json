@@ -1,4 +1,5 @@
-﻿{
+{
   "item_weight": "Вес: ",
-  "bonus_weight": "Доп. вес: "
+  "bonus_weight": "Доп. вес: ",
+  "item_weight_stack": " ({0})"
 }

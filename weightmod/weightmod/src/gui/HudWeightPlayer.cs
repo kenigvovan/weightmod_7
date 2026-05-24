@@ -44,8 +44,12 @@ namespace weightmod.src.gui
         public override void OnOwnPlayerDataReceived()
         {
             ComposeGuis();
-            UpdateWeight();
+            // Order matters: register the listener BEFORE asking the server to push,
+            // so the resulting MarkPathDirty sync is guaranteed to land on a live
+            // listener instead of disappearing into the void.
             capi.World.Player.Entity.WatchedAttributes.RegisterModifiedListener("weightmod", () => UpdateWeight());
+            //UpdateWeight();
+            weightmod.clientChannel?.SendPacket(new requestWeightSyncPacket());
         }
         public void ComposeGuis()
         {

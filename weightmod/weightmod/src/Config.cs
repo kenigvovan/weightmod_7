@@ -27,6 +27,7 @@ namespace weightmod.src
         public string CLASS_WEIGHT_BONUS { get; set; } = "commoner:0;hunter:500;malefactor:-500;clockmaker:-1000;blackguard:2000;tailor:-2000";
 
         public float HOW_OFTEN_RECHECK { get; set; } = 10f;
+        public float RECALC_DEBOUNCE_SECONDS { get; set; } = 0.25f;
 
         public string INFO_COLOR_WEIGHT { get; set; } = "#F0C20B";
         public string INFO_COLOR_WEIGHT_BONUS { get; set; } = "#1F920E";
@@ -276,7 +277,7 @@ namespace weightmod.src
             INVENTORY_WEIGHT_PLAYER_SETTINGS = new List<Dictionary<string, object>>
         {
             { new Dictionary<string, object>{ { "InvtentoryName", "backpack" }, { "StartSlot", 4 }, { "WeightBonus", false } } },
-            { new Dictionary<string, object>{ { "InvtentoryName", "backpack" }, { "EndSlot", 3 }, { "WeightBonus", true } } },
+            { new Dictionary<string, object>{ { "InvtentoryName", "backpack" }, { "EndSlot", 4 }, { "WeightBonus", true } } },
             { new Dictionary < string, object > {  { "InvtentoryName", "hotbar" }, { "WeightBonus", false } } },
             { new Dictionary < string, object > {  { "InvtentoryName", "character" }, { "WeightBonus", false } } },
             { new Dictionary < string, object > {  { "InvtentoryName", "character" }, { "WeightBonus", true } } },

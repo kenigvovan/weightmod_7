@@ -40,7 +40,13 @@ namespace weightmod.src.harmony
                         ">",
                         Lang.Get("weightmod:item_weight", Array.Empty<object>()),
                         "</font>"
-                    })).Append(itemstack.ItemAttributes["weightmod"].AsFloat(0f).ToString()).Append("\n");
+                    })).Append(tmp.ToString());
+                int n = itemstack.StackSize;
+                if (n > 1)
+                {
+                    dsc.Append(Lang.Get("weightmod:item_weight_stack", tmp * n));
+                }
+                dsc.Append("\n");
             }
             else if (itemstack.ItemAttributes != null && itemstack.ItemAttributes["weightbonusbags"].Exists)
             {

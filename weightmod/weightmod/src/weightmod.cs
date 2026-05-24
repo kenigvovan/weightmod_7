@@ -113,6 +113,7 @@ namespace weightmod.src
             harmonyInstance.Patch(typeof(Vintagestory.API.Common.CollectibleObject).GetMethod("GetHeldItemInfo"), postfix: new HarmonyMethod(typeof(harmPatch).GetMethod("Postfix_GetHeldItemInfo")));
             clientChannel = api.Network.RegisterChannel("weightmod");
             clientChannel.RegisterMessageType(typeof(syncWeightPacket));
+            clientChannel.RegisterMessageType(typeof(requestWeightSyncPacket));
             clientChannel.SetMessageHandler<syncWeightPacket>((packet) =>
             {
                 
@@ -187,7 +188,19 @@ namespace weightmod.src
             api.Event.PlayerDisconnect += OnPlayerDisconnect;
             api.Event.ServerRunPhase(EnumServerRunPhase.RunGame, FillDictAndSetWeight);
             
-            serverChannel.RegisterMessageType(typeof(syncWeightPacket));          
+            serverChannel.RegisterMessageType(typeof(syncWeightPacket));
+            serverChannel.RegisterMessageType(typeof(requestWeightSyncPacket));
+            serverChannel.SetMessageHandler<requestWeightSyncPacket>((player, _) =>
+            {
+                var beh = player.Entity.GetBehavior<EntityBehaviorPlayerWeightable>();
+                if (beh == null) return;
+                // Re-sync the current tree to the requesting client (covers the race
+                // where the initial WatchedAttributes snapshot arrived before the HUD
+                // had its modified-listener registered), and flag a recalc so any
+                // drift since join gets corrected on the next debounced tick.
+                beh.MarkDirty();
+                beh.shouldRecalc = true;
+            });
             api.Event.PlayerNowPlaying += weightStorage.sendNewValues;
             harmonyInstance = new Harmony(harmonyID);
             harmonyInstance.Patch(typeof(Vintagestory.API.Common.InventoryBase).GetMethod("DidModifyItemSlot"), postfix: new HarmonyMethod(typeof(harmPatch).GetMethod("Prefix_OnItemSlotModified")));
@@ -231,10 +244,13 @@ namespace weightmod.src
         public void OnPlayerNowPlayingClient(IServerPlayer byPlayer)
         {
             var beh = byPlayer.Entity.GetBehavior<EntityBehaviorPlayerWeightable>();
-            if(beh != null && !beh.InventoryHandlingInit)
-            {
-                beh.InitInventoryHandling();
-            }
+            if (beh == null) return;
+            if (!beh.InventoryHandlingInit) beh.InitInventoryHandling();
+            // ServerSystemInventory.OnPlayerJoin just ran AfterBlocksLoaded() on
+            // the backpack — only now is bagInv populated. AfterInitialized() may
+            // have already computed currentweight against an empty bagInv (e.g.
+            // 7668 instead of 27000 when a bag held 27k); recompute now.
+            beh.updateWeight();
         }
 
         private void FillDictAndSetWeight()

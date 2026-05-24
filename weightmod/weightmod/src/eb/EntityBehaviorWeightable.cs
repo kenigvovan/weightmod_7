@@ -1,8 +1,3 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
@@ -15,10 +10,31 @@ namespace weightmod.src.eb
         protected float currentCalculatedWeight = 0;
         protected float lastCalculatedWeight = 0;
         protected ITreeAttribute weightTree;
-        public bool shouldRecalc = false;
         public bool shouldUpdate = true;
-        float accum = 0;
         public static Config config;
+
+        private bool _shouldRecalc = false;
+        private float debounceAccum = 0;
+        private float burstAccum = 0;
+
+        // Debounce trigger: every slot event resets the debounce timer; only the
+        // first event of a burst resets burstAccum. OnGameTick then recalculates
+        // either when the debounce window passed without new events, or when the
+        // burst exceeded HOW_OFTEN_RECHECK (cap for continuous event streams).
+        public bool shouldRecalc
+        {
+            get => _shouldRecalc;
+            set
+            {
+                if (value)
+                {
+                    debounceAccum = 0;
+                    if (!_shouldRecalc) burstAccum = 0;
+                }
+                _shouldRecalc = value;
+            }
+        }
+
         protected EntityBehaviorWeightable(Entity entity) : base(entity)
         {
         }
@@ -50,15 +66,17 @@ namespace weightmod.src.eb
         }
         public override void OnGameTick(float deltaTime)
         {
-            if (entity.World.Api.Side == EnumAppSide.Server)
+            if (entity.World.Api.Side != EnumAppSide.Server) return;
+            if (!_shouldRecalc) return;
+
+            debounceAccum += deltaTime;
+            burstAccum    += deltaTime;
+
+            if (debounceAccum >= config.RECALC_DEBOUNCE_SECONDS ||
+                burstAccum    >= config.HOW_OFTEN_RECHECK)
             {
-                accum += deltaTime;
-                if (accum >= config.HOW_OFTEN_RECHECK && shouldRecalc)
-                {
-                    shouldRecalc = false;
-                    accum = 0;
-                    updateWeight();
-                }
+                _shouldRecalc = false;
+                updateWeight();
             }
         }
         public void MarkDirty()
